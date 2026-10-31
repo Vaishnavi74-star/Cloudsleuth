@@ -226,15 +226,6 @@ st.sidebar.caption("• **Production Telemetry**: Real microservice benchmark ca
 st.sidebar.caption("• **Multi-Modal**: Evaluates metrics, logs, and distributed traces.")
 st.sidebar.caption(f"• **Benchmark Cases Loaded**: {len(available_cases)} real failure runs on disk.")
 
-st.sidebar.markdown("---")
-st.sidebar.markdown("### 🤖 Google Gemma Assistant")
-g_is_cfg, g_prov_name, g_desc = gemma_service.get_status()
-if g_is_cfg:
-    st.sidebar.markdown(f'<span class="gemma-badge-live">● LIVE</span> **{g_prov_name}**', unsafe_allow_html=True)
-    st.sidebar.caption("Google Gemma connected for plain-English explanations and postmortem reports.")
-else:
-    st.sidebar.markdown('<span class="gemma-badge-fallback">● DETERMINISTIC</span> **Evidence Engine**', unsafe_allow_html=True)
-    st.sidebar.caption("API key not detected. Using zero-hallucination deterministic evidence generator. Set `GEMMA_API_KEY` in `.env` to enable live Gemma.")
 
 
 # -------------------------------------------------------------
