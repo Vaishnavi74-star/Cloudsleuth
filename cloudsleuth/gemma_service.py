@@ -482,7 +482,7 @@ At timestamp `{bundle.inject_time}`, a critical production incident degraded ser
                 "contents": [{"parts": [{"text": prompt}]}],
                 "generationConfig": {
                     "temperature": 0.2,
-                    "maxOutputTokens": 600,
+                    "maxOutputTokens": 2048,
                 },
             }
             headers = {
@@ -502,30 +502,33 @@ At timestamp `{bundle.inject_time}`, a critical production incident degraded ser
                         return "\n".join(clean_texts).strip()
                 return None
 
-            # Fast direct call with 4-second timeout to ensure instant UI responsiveness
+            # Prioritize current model, followed by verified active Gemma models on Google AI Studio
             models_to_try = [self.model_name]
-            if "gemma-4-26b-a4b-it" not in models_to_try:
-                models_to_try.append("gemma-4-26b-a4b-it")
+            fallback_models = ["gemma-4-26b-a4b-it", "gemma-4-31b-it", "gemma-2-27b-it", "gemini-2.5-flash"]
+            for m in fallback_models:
+                if m not in models_to_try:
+                    models_to_try.append(m)
 
             last_status = 500
             last_err_msg = ""
             for candidate_model in models_to_try:
                 endpoint = f"https://generativelanguage.googleapis.com/v1beta/models/{candidate_model}:generateContent"
                 try:
-                    resp = requests.post(endpoint, json=payload, headers=headers, timeout=2.5)
+                    resp = requests.post(endpoint, json=payload, headers=headers, timeout=50)
                     if resp.status_code == 200:
                         text = _extract_text(resp.json())
                         if text:
-                            self.model_name = candidate_model
+                            self.model_name = candidate_model  # Cache the working model
                             return text
                     else:
                         last_status = resp.status_code
                         last_err_msg = f"HTTP {resp.status_code}"
+                        continue
                 except requests.RequestException as e:
                     last_err_msg = str(e)
-                    break
+                    continue
 
-            raise RuntimeError(f"Google AI Studio API timeout/error: {last_err_msg or f'HTTP {last_status}'}")
+            raise RuntimeError(f"Google AI Studio API error: {last_err_msg or f'HTTP {last_status}'}")
 
         # 2. Groq API
         elif self.groq_api_key:

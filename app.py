@@ -168,7 +168,7 @@ ai_service = GemmaService()
 
 # Initialize session states
 if "navigation_page" not in st.session_state:
-    st.session_state["navigation_page"] = "🏠 Home Page"
+    st.session_state["navigation_page"] = "🏠 Home"
 if "diagnosis_history" not in st.session_state:
     st.session_state["diagnosis_history"] = []
 if "active_case_id" not in st.session_state:
@@ -326,7 +326,7 @@ st.sidebar.markdown(
 )
 
 nav_options = [
-    "🏠 Home Page",
+    "🏠 Home",
     "🔍 Live Incident Investigation",
     "🌐 Service Dependency Topology",
     "📊 Benchmark Evaluation (RCAEval)",
@@ -356,14 +356,14 @@ st.sidebar.caption("• **Diagnosis Latency**: Under 45 milliseconds / incident"
 
 
 # =============================================================
-# 1. HOME PAGE
+# 1. HOME (PRODUCTION OUTAGE STORYBOARD)
 # =============================================================
-if selected_nav == "🏠 Home Page":
+if selected_nav == "🏠 Home":
     st.markdown(
         """
         <div class="hero-banner">
             <h1>🕵️ CloudSleuth: Evidence-Based Incident RCA</h1>
-            <p>Interactive Production Outage Walkthrough: Replacing 60 minutes of chaotic on-call firefighting with a sub-second, mathematically verified root cause in plain English.</p>
+            <p>Interactive Production Walkthrough: Replacing 60 minutes of chaotic on-call firefighting with a sub-second, mathematically verified root cause in plain English.</p>
         </div>
         """,
         unsafe_allow_html=True,
@@ -457,15 +457,9 @@ if selected_nav == "🏠 Home Page":
     st.markdown("### 🧠 Scene 4: Instant AI Incident Briefing & Actionable Triage")
     st.write("One-click evidence synthesis that translates complex statistical telemetry into an executive briefing and postmortem report:")
 
-    briefing_storage_key = f"pitch_briefing_{active_id}"
-    if briefing_storage_key not in st.session_state:
-        st.session_state[briefing_storage_key] = ai_service.explain_incident(result, bundle)
-
     col_pitch_btn, col_pitch_gt = st.columns([1, 1])
     with col_pitch_btn:
-        if st.button("🔄 Refresh AI Incident Briefing", key="pitch_ai_btn", type="primary", use_container_width=True):
-            st.session_state[briefing_storage_key] = ai_service.explain_incident(result, bundle)
-            st.rerun()
+        generate_pitch_ai = st.button("⚡ Generate AI Incident Briefing", key="pitch_ai_btn", type="primary", use_container_width=True)
     with col_pitch_gt:
         gt_match = (top_cand.service == gt["service"])
         st.markdown(
@@ -483,21 +477,28 @@ if selected_nav == "🏠 Home Page":
             unsafe_allow_html=True,
         )
 
-    resp_obj: GemmaResponse = st.session_state[briefing_storage_key]
-    st.markdown(
-        f"""
-        <div class="ai-briefing-card">
-            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px;">
-                <span style="font-weight: 800; font-size: 1.1rem; color: #1e3a8a;">📋 CloudSleuth AI Incident Briefing</span>
-                <span style="background: #dbeafe; color: #1e40af; padding: 3px 10px; border-radius: 12px; font-size: 0.8rem; font-weight: 700;">
-                    Evidence Grounded • Zero Hallucination • {resp_obj.latency_ms:.0f} ms
-                </span>
-            </div>
-        """,
-        unsafe_allow_html=True,
-    )
-    st.markdown(resp_obj.text)
-    st.markdown("</div>", unsafe_allow_html=True)
+    briefing_storage_key = f"pitch_briefing_{active_id}"
+    if generate_pitch_ai or briefing_storage_key in st.session_state:
+        if generate_pitch_ai or briefing_storage_key not in st.session_state:
+            with st.spinner("Synthesizing evidence-backed incident briefing..."):
+                resp = ai_service.explain_incident(result, bundle)
+                st.session_state[briefing_storage_key] = resp
+
+        resp_obj: GemmaResponse = st.session_state[briefing_storage_key]
+        st.markdown(
+            f"""
+            <div class="ai-briefing-card">
+                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px;">
+                    <span style="font-weight: 800; font-size: 1.1rem; color: #1e3a8a;">📋 CloudSleuth AI Incident Briefing</span>
+                    <span style="background: #dbeafe; color: #1e40af; padding: 3px 10px; border-radius: 12px; font-size: 0.8rem; font-weight: 700;">
+                        Evidence Grounded • Zero Hallucination • {resp_obj.latency_ms:.0f} ms
+                    </span>
+                </div>
+            """,
+            unsafe_allow_html=True,
+        )
+        st.markdown(resp_obj.text)
+        st.markdown("</div>", unsafe_allow_html=True)
 
 
 # =============================================================
@@ -663,41 +664,33 @@ elif selected_nav == "🔍 Live Incident Investigation":
         with tab_ai_exp:
             st.markdown("#### Comprehensive Plain-English Incident Briefing")
             exp_storage_key = f"inv_exp_{selected_case_id}"
-            if exp_storage_key not in st.session_state:
-                st.session_state[exp_storage_key] = ai_service.explain_incident(result, bundle)
-
-            col_exp_act, _ = st.columns([1, 2])
-            with col_exp_act:
-                if st.button("🔄 Refresh Incident Briefing", key=f"inv_btn_exp_{selected_case_id}", type="primary"):
+            if st.button("⚡ Generate AI Incident Briefing", key=f"inv_btn_exp_{selected_case_id}", type="primary"):
+                with st.spinner("Synthesizing evidence-backed incident briefing..."):
                     st.session_state[exp_storage_key] = ai_service.explain_incident(result, bundle)
-                    st.rerun()
 
-            resp_item: GemmaResponse = st.session_state[exp_storage_key]
-            st.markdown(
-                f"""
-                <div class="ai-briefing-card">
-                    <div style="font-weight: 800; font-size: 1.05rem; color: #1e3a8a; margin-bottom: 10px;">
-                        📋 Incident Briefing | Generated in {resp_item.latency_ms:.0f} ms
-                    </div>
-                """,
-                unsafe_allow_html=True,
-            )
-            st.markdown(resp_item.text)
-            st.markdown("</div>", unsafe_allow_html=True)
+            if exp_storage_key in st.session_state:
+                resp_item: GemmaResponse = st.session_state[exp_storage_key]
+                st.markdown(
+                    f"""
+                    <div class="ai-briefing-card">
+                        <div style="font-weight: 800; font-size: 1.05rem; color: #1e3a8a; margin-bottom: 10px;">
+                            📋 Incident Briefing | Generated in {resp_item.latency_ms:.0f} ms
+                        </div>
+                    """,
+                    unsafe_allow_html=True,
+                )
+                st.markdown(resp_item.text)
+                st.markdown("</div>", unsafe_allow_html=True)
 
         with tab_ai_rep:
             st.markdown("#### Formal 8-Section Incident Postmortem Report")
             rep_storage_key = f"inv_rep_{selected_case_id}"
-            if rep_storage_key not in st.session_state:
-                st.session_state[rep_storage_key] = ai_service.generate_incident_report(result, bundle)
-
-            col_rep_act, _ = st.columns([1, 2])
-            with col_rep_act:
-                if st.button("🔄 Refresh Postmortem Report", key=f"inv_btn_rep_{selected_case_id}", type="primary"):
+            if st.button("📑 Generate Executive Postmortem", key=f"inv_btn_rep_{selected_case_id}", type="primary"):
+                with st.spinner("Compiling standardized incident postmortem report..."):
                     st.session_state[rep_storage_key] = ai_service.generate_incident_report(result, bundle)
-                    st.rerun()
 
-            rep_item: GemmaResponse = st.session_state[rep_storage_key]
+            if rep_storage_key in st.session_state:
+                rep_item: GemmaResponse = st.session_state[rep_storage_key]
                 dl1, dl2 = st.columns(2)
                 with dl1:
                     st.download_button(
@@ -910,7 +903,7 @@ elif selected_nav == "📋 Incident Audit History":
 
     history = st.session_state["diagnosis_history"]
     if not history:
-        st.info("No incidents analyzed yet in this session. Go to **Live Incident Investigation** or **Home Page** to run an analysis.")
+        st.info("No incidents analyzed yet in this session. Go to **Live Incident Investigation** or **Home** to run an analysis.")
     else:
         st.markdown(f"**Total Diagnoses Executed: {len(history)}**")
         df_hist = pd.DataFrame(history)
