@@ -1,0 +1,22 @@
+# RCAEval default environment: Python 3.14 (also tested on 3.12 and 3.13).
+# Only the packages RCAEval imports; lower bounds are the first releases with
+# CPython 3.14 wheels. On CPU-only machines, install torch first to skip the
+# CUDA wheels:
+#   pip install torch --index-url https://download.pytorch.org/whl/cpu
+numpy>=2.3.3,<3
+pandas>=2.3.3,<4
+scipy>=1.16.1
+scikit-learn>=1.7.2
+networkx>=3.4,<4
+statsmodels>=0.14.5,<0.15  # 0.15 pulls formulaic, which lets pip pick wrapt pre-releases on 3.13+
+matplotlib>=3.10.5
+causal-learn>=0.1.4.8
+tigramite>=5.2.10.1
+pingouin>=0.6.1
+scikit-network>=0.33.5  # no cp314 wheel; builds from source (needs a C++ compiler and Python headers)
+torch>=2.9.0  # causalrca, run, mscred, cmlp_pagerank; left out of the core extra
+tqdm>=4.66
+requests>=2.32
+python-dateutil>=2.9.0.post0
+toml>=0.10.2
+pytest>=8.0

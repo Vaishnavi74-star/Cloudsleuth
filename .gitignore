@@ -1,0 +1,33 @@
+# Environment & secrets (CRITICAL - NEVER COMMIT)
+.env
+.env.*
+*.env
+!.env.example
+*.pem
+*.key
+*.cert
+
+# Python cache & artifacts
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+.pytest_cache/
+.coverage
+htmlcov/
+
+# Virtual environments
+venv/
+.venv/
+env/
+ENV/
+
+# IDE & Editor folders
+.idea/
+.vscode/
+*.swp
+*.swo
+
+# Operational logs & temp files
+*.log
+scratch/

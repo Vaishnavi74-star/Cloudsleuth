@@ -1,0 +1,36 @@
+# CloudSleuth Docker Ignore File
+# Security: Never bake credentials or local virtual environments into the image
+
+# Secrets and environment variables
+.env
+.env.local
+.env.*.local
+
+# Git and version control
+.git
+.gitignore
+
+# Python bytecode and caches
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+.pytest_cache/
+.coverage
+htmlcov/
+
+# Logs and scratch data
+*.log
+scratch/
+
+# Virtual environments
+.venv/
+venv/
+ENV/
+env/
+
+# IDE and OS files
+.vscode/
+.idea/
+.DS_Store
+Thumbs.db
