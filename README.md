@@ -273,17 +273,3 @@ http://<EC2-PUBLIC-IP>:8501
 
 ---
 
-## 🎤 Hackathon Pitch & Judge FAQ
-
-**Q: Why not just use an LLM to guess root causes from raw logs?**  
-*A: In production, feeding 100MB of raw logs to an LLM takes 30-60 seconds, costs money per incident, risks hallucinations, and ignores time-series metrics. CloudSleuth runs deterministically in <50ms with mathematical proof, and uses Google Gemma solely to explain verified findings in plain English.*
-
-**Q: Did you evaluate on real data?**  
-*A: Yes. All data is from RCAEval, the premier peer-reviewed benchmark for microservice RCA (ACM WWW '25 / FSE '26). No synthetic data was substituted.*
-
-**Q: Can Gemma change the RCA diagnosis or benchmark score?**  
-*A: Never. The mathematical engine produces the immutable diagnosis. Gemma only explains the evidence trail and formats the report.*
-
-**Q: How does CloudSleuth run in production clouds like AWS?**  
-*A: CloudSleuth is fully containerized in a lean 315MB (compressed) Docker image. It runs on any standard EC2 Ubuntu instance or cloud VM with a single `docker run` command, binding to `0.0.0.0:8501` with zero paid AWS service dependencies.*
-
