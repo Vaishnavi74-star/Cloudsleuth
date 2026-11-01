@@ -240,13 +240,72 @@ st.markdown(
         color: #e2e8f0;
     }
     
+    /* Sidebar Dark Theme & Full Text Visibility */
+    [data-testid="stSidebar"], section[data-testid="stSidebar"], [data-testid="stSidebar"] > div:first-child {
+        background-color: #0b1329 !important;
+        border-right: 1px solid #1e293b !important;
+    }
+    [data-testid="stSidebar"] h1, 
+    [data-testid="stSidebar"] h2, 
+    [data-testid="stSidebar"] h3, 
+    [data-testid="stSidebar"] h4 {
+        color: #f8fafc !important;
+    }
+    [data-testid="stSidebar"] p, 
+    [data-testid="stSidebar"] span, 
+    [data-testid="stSidebar"] label,
+    [data-testid="stSidebar"] .stMarkdown,
+    [data-testid="stSidebar"] div {
+        color: #cbd5e1 !important;
+    }
+    [data-testid="stSidebar"] .stRadio label span {
+        color: #f8fafc !important;
+        font-weight: 500 !important;
+    }
+    [data-testid="stSidebar"] .stCaption, [data-testid="stSidebar"] small {
+        color: #94a3b8 !important;
+    }
+
+    /* High-Contrast Visible Action & Scenario Buttons */
+    button[kind="secondary"], .stButton > button {
+        background-color: #1e293b !important;
+        color: #f8fafc !important;
+        border: 1px solid #475569 !important;
+        border-radius: 8px !important;
+        font-weight: 600 !important;
+        box-shadow: 0 2px 6px rgba(0, 0, 0, 0.2);
+    }
+    button[kind="secondary"]:hover, .stButton > button:hover {
+        background-color: #334155 !important;
+        border-color: #60a5fa !important;
+        color: #ffffff !important;
+    }
+    button[kind="primary"] {
+        background-color: #ef4444 !important;
+        color: #ffffff !important;
+        border: 1px solid #dc2626 !important;
+        border-radius: 8px !important;
+        font-weight: 700 !important;
+        box-shadow: 0 2px 8px rgba(239, 68, 68, 0.3);
+    }
+    button[kind="primary"]:hover {
+        background-color: #dc2626 !important;
+        border-color: #b91c1c !important;
+    }
+
     /* Streamlit UI Tweaks */
     div[data-testid="stSidebarNav"] { display: none; }
     .stSelectbox label, .stSlider label { color: #cbd5e1 !important; font-weight: 600; }
-    .stDownloadButton button, .stButton button {
+    .stDownloadButton button {
+        background-color: #1e293b !important;
+        color: #f8fafc !important;
+        border: 1px solid #3b82f6 !important;
         border-radius: 8px !important;
         font-weight: 600 !important;
-        transition: all 0.15s ease;
+    }
+    .stDownloadButton button:hover {
+        background-color: #2563eb !important;
+        color: #ffffff !important;
     }
     </style>
     """,
@@ -416,10 +475,13 @@ st.markdown(
             <span>⚡</span> Causal Latency: <span class="ticker-value">&lt; 38 ms P99</span>
         </div>
         <div class="ticker-item">
-            <span>🛡️</span> Ground-Truth Isolation: <span class="ticker-value">100% Strict (Zero Leakage)</span>
+            <span>🤖</span> AI Engine: <span class="ticker-value" style="color: #6ee7b7;">Gemma ({ai_service.model_name})</span>
         </div>
         <div class="ticker-item">
-            <span>📊</span> Verified Benchmark: <span class="ticker-value">{len(available_cases)} Real Outage Runs</span>
+            <span>🛡️</span> Ground-Truth: <span class="ticker-value">100% Strict Isolation</span>
+        </div>
+        <div class="ticker-item">
+            <span>📊</span> RCAEval Benchmark: <span class="ticker-value">{len(available_cases)} Verified Runs</span>
         </div>
     </div>
     """,
@@ -647,8 +709,8 @@ if selected_nav == "🏠 Home":
             <div class="ai-briefing-card">
                 <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px;">
                     <span style="font-weight: 800; font-size: 1.1rem; color: #93c5fd;">📋 CloudSleuth AI Incident Briefing</span>
-                    <span style="background: rgba(59, 130, 246, 0.2); color: #93c5fd; border: 1px solid #3b82f6; padding: 3px 10px; border-radius: 12px; font-size: 0.8rem; font-weight: 700;">
-                        Evidence Grounded • Zero Hallucination • {resp_obj.latency_ms:.0f} ms
+                    <span style="background: rgba(16, 185, 129, 0.2); color: #6ee7b7; border: 1px solid #10b981; padding: 3px 10px; border-radius: 12px; font-size: 0.8rem; font-weight: 700;">
+                        🟢 Google Gemma ({resp_obj.model_name}) • Live Connected • {resp_obj.latency_ms:.0f} ms
                     </span>
                 </div>
             """,
