@@ -880,6 +880,12 @@ elif selected_nav == "🔍 Live Incident Investigation":
     st.markdown("### 📋 Outage Summary: The 4 Key Answers")
 
     if top_cand:
+        supp_metric = top_cand.supporting_metrics[0] if top_cand.supporting_metrics else None
+        onset_str = f"T+{supp_metric.onset_delay_sec or 0}s" if supp_metric else "Immediate (T+0s)"
+        peak_str = f"{supp_metric.anomalous_peak}" if supp_metric else "Abnormal"
+        base_str = f"{supp_metric.baseline_median}" if supp_metric else "Nominal"
+        jump_str = f"+{supp_metric.percent_change:.1f}%" if supp_metric else "Elevated"
+
         w1, w2, w3, w4 = st.columns(4)
         with w1:
             st.markdown(
@@ -909,7 +915,7 @@ elif selected_nav == "🔍 Live Incident Investigation":
                 <div class="four-w-card">
                     <div class="four-w-title" style="color: #fbbf24;">3. How Severe?</div>
                     <div class="four-w-value">Score: {top_cand.root_cause_score:.1f}x</div>
-                    <div class="four-w-desc">First abnormal spike detected (T+{top_cand.supporting_metrics[0].onset_delay_sec or 0}s).</div>
+                    <div class="four-w-desc">First abnormal spike detected ({onset_str}).</div>
                 </div>
                 """,
                 unsafe_allow_html=True,
@@ -1040,9 +1046,9 @@ elif selected_nav == "🔍 Live Incident Investigation":
 
         with exp_col:
             st.markdown("**Why CloudSleuth Flagged This Service:**")
-            st.write(f"• **Peak Metric Value**: `{top_cand.supporting_metrics[0].anomalous_peak}` (Normal: `{top_cand.supporting_metrics[0].baseline_median}`)")
-            st.write(f"• **Spike Jump**: `+{top_cand.supporting_metrics[0].percent_change:.1f}%`")
-            st.write(f"• **Outage Start Time**: First spiked at `{top_cand.supporting_metrics[0].onset_delay_sec or 0}s` after incident began.")
+            st.write(f"• **Peak Metric Value**: `{peak_str}` (Normal: `{base_str}`)")
+            st.write(f"• **Spike Jump**: `{jump_str}`")
+            st.write(f"• **Outage Start Time**: First spiked at `{onset_str}` after incident began.")
             if "logs" in top_cand.multi_source_evidence:
                 st.write("• **Error Logs**: Confirmed by a sudden flood of error logs.")
             st.write("• **Service Role**: Failed first; downstream services slowed down only as a reaction.")
