@@ -293,6 +293,85 @@ st.markdown(
         border-color: #b91c1c !important;
     }
 
+    /* Crisp High-Contrast Metric Cards */
+    [data-testid="stMetric"] {
+        background-color: #1e293b !important;
+        border: 1px solid #334155 !important;
+        border-radius: 10px !important;
+        padding: 0.9rem 1.2rem !important;
+        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15) !important;
+    }
+    [data-testid="stMetricLabel"],
+    [data-testid="stMetricLabel"] *,
+    [data-testid="stMetricLabel"] p,
+    [data-testid="stMetricLabel"] label {
+        color: #94a3b8 !important;
+        font-size: 0.85rem !important;
+        font-weight: 700 !important;
+        letter-spacing: 0.03em !important;
+    }
+    [data-testid="stMetricValue"],
+    [data-testid="stMetricValue"] *,
+    [data-testid="stMetricValue"] div {
+        color: #38bdf8 !important;
+        font-size: 1.55rem !important;
+        font-weight: 800 !important;
+        letter-spacing: -0.01em !important;
+    }
+    [data-testid="stMetricDelta"],
+    [data-testid="stMetricDelta"] * {
+        color: #6ee7b7 !important;
+        font-weight: 600 !important;
+    }
+
+    /* Expander Dark Theme & Bright Legible Text */
+    [data-testid="stExpander"] {
+        background-color: #1e293b !important;
+        border: 1px solid #334155 !important;
+        border-radius: 8px !important;
+        overflow: hidden !important;
+        margin-top: 0.75rem !important;
+    }
+    [data-testid="stExpander"] details {
+        background-color: #1e293b !important;
+    }
+    [data-testid="stExpander"] summary {
+        background-color: #1e293b !important;
+        color: #f8fafc !important;
+        font-weight: 600 !important;
+        padding: 0.7rem 1rem !important;
+    }
+    [data-testid="stExpander"] summary:hover {
+        background-color: #334155 !important;
+        color: #ffffff !important;
+    }
+    [data-testid="stExpander"] summary span,
+    [data-testid="stExpander"] summary p {
+        color: #f8fafc !important;
+        font-weight: 600 !important;
+    }
+    [data-testid="stExpander"] summary svg {
+        fill: #94a3b8 !important;
+    }
+    [data-testid="stExpander"] [data-testid="stExpanderDetails"] {
+        background-color: #0f172a !important;
+        border-top: 1px solid #334155 !important;
+        padding: 1rem !important;
+    }
+    [data-testid="stExpander"] [data-testid="stExpanderDetails"] * {
+        color: #e2e8f0 !important;
+    }
+
+    /* Tabs Styling */
+    button[data-baseweb="tab"] {
+        color: #94a3b8 !important;
+        font-weight: 600 !important;
+    }
+    button[data-baseweb="tab"][aria-selected="true"] {
+        color: #60a5fa !important;
+        border-bottom-color: #3b82f6 !important;
+    }
+
     /* Streamlit UI Tweaks */
     div[data-testid="stSidebarNav"] { display: none; }
     .stSelectbox label, .stSlider label { color: #cbd5e1 !important; font-weight: 600; }
@@ -526,11 +605,11 @@ selected_nav = st.sidebar.radio(
 st.session_state["navigation_page"] = selected_nav
 
 st.sidebar.markdown("---")
-st.sidebar.markdown("### ⚙️ Engine Telemetry Feeds")
-st.sidebar.caption("• **Metrics**: High-frequency system & container time series")
-st.sidebar.caption("• **Logs**: Microservice error rate burst templates")
-st.sidebar.caption("• **Traces**: Distributed span latency & error ratios")
-st.sidebar.caption("• **Protocol**: ACM WWW '25 / FSE '26 RCAEval Benchmark")
+st.sidebar.markdown("### ⚙️ Monitored Signals")
+st.sidebar.caption("• **Metrics**: CPU, memory, disk, and network stats")
+st.sidebar.caption("• **Logs**: Error messages and crash alerts")
+st.sidebar.caption("• **Traces**: Response times and communication delays")
+st.sidebar.caption("• **Benchmark**: Real-world production failure datasets")
 
 
 # =============================================================
@@ -540,21 +619,21 @@ if selected_nav == "🏠 Home":
     st.markdown(
         """
         <div class="hero-banner">
-            <h1>⚡ CloudSleuth: Production Outage RCA Platform</h1>
-            <p>Evidence-based root-cause analysis for microservices. Replacing 60 minutes of chaotic on-call firefighting with a sub-second, mathematically proven diagnosis in plain English.</p>
+            <h1>⚡ CloudSleuth: Smart Root-Cause Detector</h1>
+            <p>Finds the real cause of cloud outages in seconds. Turns noisy alerts and confusing errors into clear, plain-English answers so teams can fix outages fast.</p>
         </div>
         """,
         unsafe_allow_html=True,
     )
 
-    st.markdown("### 🎬 Production Outage Walkthrough")
-    st.write("Select a verified incident below to explore how CloudSleuth isolates true causes from cascading symptoms:")
+    st.markdown("### 🎬 Live Outage Walkthrough")
+    st.write("Pick an incident below to see how CloudSleuth finds the real culprit instead of blaming innocent services:")
 
     # Instant scenario selection pills
     demo_scenarios = [
-        ("sample_baro_emailservice_mem", "🔴 Scenario 1: Memory Leak (emailservice) [SEV-1]"),
-        ("multi_source_re2_ob", "🟠 Scenario 2: Multi-Modal Disk Contention (redis) [SEV-1]"),
-        ("re1_ob_checkoutservice_cpu_1", "🟡 Scenario 3: CPU Exhaustion Cascade (checkoutservice) [SEV-2]"),
+        ("sample_baro_emailservice_mem", "🔴 Incident 1: Memory Leak (emailservice) [High Priority]"),
+        ("multi_source_re2_ob", "🟠 Incident 2: Disk Full Issue (redis) [High Priority]"),
+        ("re1_ob_checkoutservice_cpu_1", "🟡 Incident 3: High CPU Overload (checkoutservice) [Medium Priority]"),
     ]
 
     scenario_cols = st.columns(len(demo_scenarios))
@@ -582,10 +661,10 @@ if selected_nav == "🏠 Home":
             f"""
             <div class="scene-step-card" style="border-left-color: #ef4444; height: 100%;">
                 <div style="font-size: 0.8rem; font-weight: 800; color: #f87171; text-transform: uppercase;">1. The 3:00 AM Alert</div>
-                <div style="font-size: 1.15rem; font-weight: 700; color: #f1f5f9; margin: 4px 0;">🚨 Alert on Edge: <code>frontend</code></div>
+                <div style="font-size: 1.15rem; font-weight: 700; color: #f1f5f9; margin: 4px 0;">🚨 Outage Alert: <code>frontend</code></div>
                 <p style="color: #94a3b8; font-size: 0.88rem; margin-bottom: 0;">
-                    P99 user latency spikes 500% at timestamp <strong>{active_case.inject_time}</strong>.
-                    Every naive APM highlights the edge proxy in red.
+                    User response times suddenly slow down by 500% at timestamp <strong>{active_case.inject_time}</strong>.
+                    Standard monitoring tools mistakenly blame the frontend.
                 </p>
             </div>
             """,
@@ -596,11 +675,11 @@ if selected_nav == "🏠 Home":
         st.markdown(
             f"""
             <div class="scene-step-card" style="border-left-color: #f59e0b; height: 100%;">
-                <div style="font-size: 0.8rem; font-weight: 800; color: #fbbf24; text-transform: uppercase;">2. The Cascading Trap</div>
-                <div style="font-size: 1.15rem; font-weight: 700; color: #f1f5f9; margin: 4px 0;">❌ Naive Mistake: Blaming Frontend</div>
+                <div style="font-size: 0.8rem; font-weight: 800; color: #fbbf24; text-transform: uppercase;">2. The Common Mistake</div>
+                <div style="font-size: 1.15rem; font-weight: 700; color: #f1f5f9; margin: 4px 0;">❌ Mistake: Blaming Frontend</div>
                 <p style="color: #94a3b8; font-size: 0.88rem; margin-bottom: 0;">
-                    The frontend is merely the downstream victim of an upstream blockage.
-                    Dumping 100MB of logs into a raw LLM takes 60s and hallucinates.
+                    The frontend is completely healthy! It is just waiting on a stuck backend service.
+                    Pasting logs into a standard AI takes 60 seconds and guesses wrong.
                 </p>
             </div>
             """,
@@ -611,11 +690,11 @@ if selected_nav == "🏠 Home":
         st.markdown(
             f"""
             <div class="scene-step-card" style="border-left-color: #10b981; height: 100%;">
-                <div style="font-size: 0.8rem; font-weight: 800; color: #34d399; text-transform: uppercase;">3. CloudSleuth Solution</div>
-                <div style="font-size: 1.15rem; font-weight: 700; color: #f1f5f9; margin: 4px 0;">🎯 Proven Culprit: <code>{top_cand.service.upper() if top_cand else 'Unknown'}</code></div>
+                <div style="font-size: 0.8rem; font-weight: 800; color: #34d399; text-transform: uppercase;">3. CloudSleuth Answer</div>
+                <div style="font-size: 1.15rem; font-weight: 700; color: #f1f5f9; margin: 4px 0;">🎯 Real Culprit: <code>{top_cand.service.upper() if top_cand else 'Unknown'}</code></div>
                 <p style="color: #94a3b8; font-size: 0.88rem; margin-bottom: 0;">
-                    Robust Z-score analysis isolates internal resource exhaustion at <strong>T+0s</strong>.
-                    Diagnosed deterministically in <strong>&lt; 38 ms</strong>.
+                    CloudSleuth detected the exact resource exhaustion the second it started (<strong>T+0s</strong>).
+                    Identified in <strong>&lt; 38 milliseconds</strong>.
                 </p>
             </div>
             """,
@@ -630,8 +709,8 @@ if selected_nav == "🏠 Home":
     st.plotly_chart(fig_topo, use_container_width=True, config={"displayModeBar": False})
 
     # Side-by-side Telemetry: Root Cause vs Cascading Symptom
-    st.markdown("### 📈 Causal Telemetry Comparison: Culprit vs Downstream Symptom")
-    st.caption("Visual proof: The upstream resource exhaustion begins immediately at T+0s, while edge frontend latency lags behind.")
+    st.markdown("### 📈 Side-by-Side Proof: True Cause vs Delayed Reaction")
+    st.caption("Notice how the real culprit spiked immediately at T+0s, while other services only slowed down seconds later.")
 
     culprit_metric = top_cand.primary_metric if (top_cand and top_cand.primary_metric in bundle.metrics_df.columns) else bundle.metrics_df.columns[1]
     symptom_candidates = [col for col in bundle.metrics_df.columns if "frontend" in col or "lat" in col or "cpu" in col]
@@ -639,7 +718,7 @@ if selected_nav == "🏠 Home":
 
     fig_dual = make_subplots(
         rows=1, cols=2,
-        subplot_titles=(f"🔴 Upstream Root Cause: {culprit_metric}", f"🟡 Downstream Symptom: {symptom_metric}"),
+        subplot_titles=(f"🔴 Real Cause (Spiked First): {culprit_metric}", f"🟡 Delayed Reaction: {symptom_metric}"),
     )
     
     m_df = bundle.metrics_df
@@ -674,7 +753,7 @@ if selected_nav == "🏠 Home":
 
     # AI Executive Briefing
     st.markdown("---")
-    st.markdown("### 🧠 Instant AI Incident Briefing & Postmortem")
+    st.markdown("### 🧠 Instant AI Incident Explanation & Fix Guide")
     
     col_pitch_btn, col_pitch_gt = st.columns([1, 1])
     with col_pitch_btn:
@@ -685,8 +764,8 @@ if selected_nav == "🏠 Home":
             f"""
             <div style="background: #1e293b; border: 1px solid #334155; border-radius: 8px; padding: 10px 16px; display: flex; justify-content: space-between; align-items: center;">
                 <div>
-                    <div style="font-size: 0.75rem; color: #94a3b8; font-weight: 700;">BENCHMARK AUDIT VERDICT</div>
-                    <div style="font-weight: 800; font-size: 1.05rem; color: #f8fafc;">Predicted: <code>{top_cand.service}</code> | Ground Truth: <code>{gt['service']}</code></div>
+                    <div style="font-size: 0.75rem; color: #94a3b8; font-weight: 700;">ACCURACY CHECK</div>
+                    <div style="font-weight: 800; font-size: 1.05rem; color: #f8fafc;">Detected: <code>{top_cand.service}</code> | Actual Cause: <code>{gt['service']}</code></div>
                 </div>
                 <span class="badge-root" style="background-color: {'rgba(16, 185, 129, 0.2)' if gt_match else 'rgba(239, 68, 68, 0.2)'}; color: {'#6ee7b7' if gt_match else '#fca5a5'}; border-color: {'#10b981' if gt_match else '#ef4444'}; font-size: 0.95rem;">
                     {'MATCHED ✅' if gt_match else 'MISSED ❌'}
@@ -724,9 +803,9 @@ if selected_nav == "🏠 Home":
 # 2. LIVE INCIDENT INVESTIGATION (DEEP DIVE)
 # =============================================================
 elif selected_nav == "🔍 Live Incident Investigation":
-    st.markdown('<h2>🔍 Live Incident Investigation & Triage</h2>', unsafe_allow_html=True)
+    st.markdown('<h2>🔍 Live Incident Investigation</h2>', unsafe_allow_html=True)
     st.markdown(
-        '<p style="color: #94a3b8; font-size: 1.05rem;">Select any production incident to calculate robust statistical z-scores, inspect anomaly lead times, and generate executive remediation runbooks.</p>',
+        '<p style="color: #94a3b8; font-size: 1.05rem;">Select any incident to identify which service broke, see when the failure started, and get step-by-step fix recommendations in plain English.</p>',
         unsafe_allow_html=True,
     )
 
@@ -740,7 +819,7 @@ elif selected_nav == "🔍 Live Incident Investigation":
     col_select, col_btn = st.columns([3, 1])
     with col_select:
         selected_case_id = st.selectbox(
-            "Select Benchmark Incident to Diagnose:",
+            "Select Incident to Investigate:",
             case_options,
             index=def_idx,
             format_func=lambda cid: case_labels.get(cid, cid),
@@ -755,21 +834,21 @@ elif selected_nav == "🔍 Live Incident Investigation":
     selected_case = case_map[selected_case_id]
 
     st.caption(
-        f"Incident Context: **{selected_case.system}** | Benchmark Suite: **{selected_case.suite}** | "
-        f"Signals Ingested: **{', '.join(selected_case.telemetry_types).upper()}**"
+        f"System: **{selected_case.system}** | Category: **{selected_case.suite}** | "
+        f"Data Inspected: **{', '.join(selected_case.telemetry_types).upper()}**"
     )
 
     # Interactive Tuning Drawer
-    with st.expander("⚙️ Interactive Tuning & Engine Controls (Optional)", expanded=False):
+    with st.expander("⚙️ Advanced Detection Settings (Optional)", expanded=False):
         c1, c2, c3, c4 = st.columns(4)
         with c1:
-            method_choice = st.selectbox("Algorithm", ["CloudSleuth Statistical Engine", "Official RCAEval BARO Baseline"])
+            method_choice = st.selectbox("Detection Engine", ["CloudSleuth Statistical Engine", "Official RCAEval BARO Baseline"])
         with c2:
-            z_threshold = st.slider("Anomaly Threshold (Z-Score)", 2.0, 6.0, 3.0, 0.5)
+            z_threshold = st.slider("Sensitivity (Spike Threshold)", 2.0, 6.0, 3.0, 0.5)
         with c3:
-            time_window = st.slider("Observation Window (Minutes)", 5, 30, 10, 5)
+            time_window = st.slider("Time Window (Minutes)", 5, 30, 10, 5)
         with c4:
-            prioritize_topology = st.checkbox("Topological Disambiguation", value=True)
+            prioritize_topology = st.checkbox("Smart Filter (Ignore Innocent Delayed Services)", value=True)
 
     # Fast cached analysis
     result, bundle = get_cached_analysis(
@@ -798,7 +877,7 @@ elif selected_nav == "🔍 Live Incident Investigation":
         )
 
     st.markdown("---")
-    st.markdown("### 📋 The 4-W Incident Verdict")
+    st.markdown("### 📋 Outage Summary: The 4 Key Answers")
 
     if top_cand:
         w1, w2, w3, w4 = st.columns(4)
@@ -806,9 +885,9 @@ elif selected_nav == "🔍 Live Incident Investigation":
             st.markdown(
                 f"""
                 <div class="four-w-card">
-                    <div class="four-w-title" style="color: #f87171;">1. What Broke?</div>
+                    <div class="four-w-title" style="color: #f87171;">1. What Failed?</div>
                     <div class="four-w-value">{top_cand.primary_fault_type.upper()}</div>
-                    <div class="four-w-desc">Direct resource exhaustion on <code>{top_cand.primary_metric}</code>.</div>
+                    <div class="four-w-desc">Resource exhaustion on <code>{top_cand.primary_metric}</code>.</div>
                 </div>
                 """,
                 unsafe_allow_html=True,
@@ -817,9 +896,9 @@ elif selected_nav == "🔍 Live Incident Investigation":
             st.markdown(
                 f"""
                 <div class="four-w-card">
-                    <div class="four-w-title" style="color: #60a5fa;">2. Where It Broke?</div>
+                    <div class="four-w-title" style="color: #60a5fa;">2. Which Service?</div>
                     <div class="four-w-value">{top_cand.service.upper()}</div>
-                    <div class="four-w-desc">Ranked #1 culprit with <strong>{top_cand.confidence * 100:.0f}% confidence</strong>.</div>
+                    <div class="four-w-desc">Detected as #1 cause with <strong>{top_cand.confidence * 100:.0f}% confidence</strong>.</div>
                 </div>
                 """,
                 unsafe_allow_html=True,
@@ -828,9 +907,9 @@ elif selected_nav == "🔍 Live Incident Investigation":
             st.markdown(
                 f"""
                 <div class="four-w-card">
-                    <div class="four-w-title" style="color: #fbbf24;">3. Why It Broke?</div>
-                    <div class="four-w-value">Z-SCORE {top_cand.root_cause_score:.1f}</div>
-                    <div class="four-w-desc">Earliest changepoint deviation (T+{top_cand.supporting_metrics[0].onset_delay_sec or 0}s).</div>
+                    <div class="four-w-title" style="color: #fbbf24;">3. How Severe?</div>
+                    <div class="four-w-value">Score: {top_cand.root_cause_score:.1f}x</div>
+                    <div class="four-w-desc">First abnormal spike detected (T+{top_cand.supporting_metrics[0].onset_delay_sec or 0}s).</div>
                 </div>
                 """,
                 unsafe_allow_html=True,
@@ -839,9 +918,9 @@ elif selected_nav == "🔍 Live Incident Investigation":
             st.markdown(
                 f"""
                 <div class="four-w-card">
-                    <div class="four-w-title" style="color: #34d399;">4. Latency?</div>
+                    <div class="four-w-title" style="color: #34d399;">4. Analysis Time</div>
                     <div class="four-w-value">&lt; 38 ms</div>
-                    <div class="four-w-desc">Instant deterministic calculation over raw telemetry.</div>
+                    <div class="four-w-desc">Calculated in milliseconds without guessing.</div>
                 </div>
                 """,
                 unsafe_allow_html=True,
@@ -850,20 +929,20 @@ elif selected_nav == "🔍 Live Incident Investigation":
         st.markdown("<br>", unsafe_allow_html=True)
 
         # Actionable Triage Section
-        st.markdown("### 🛠️ Immediate Triage Actions (SRE Runbook)")
+        st.markdown("### 🛠️ Recommended Fix Steps")
         for i, rec in enumerate(result.recommendations, 1):
             st.markdown(f"**{i}.** {rec}")
 
         # AI Copilot Tabs
         st.markdown("---")
-        st.markdown("### 🧠 AI Incident Copilot & Executive Briefing")
-        tab_ai_exp, tab_ai_rep = st.tabs(["✨ Natural Language Incident Briefing", "📑 Executive Postmortem Report"])
+        st.markdown("### 🧠 AI Incident Copilot & Explanation")
+        tab_ai_exp, tab_ai_rep = st.tabs(["✨ Plain-English Incident Briefing", "📑 Detailed Fix Report"])
 
         with tab_ai_exp:
-            st.markdown("#### Comprehensive Plain-English Incident Briefing")
+            st.markdown("#### Clear Incident Summary")
             exp_storage_key = f"inv_exp_{selected_case_id}"
             if st.button("⚡ Generate AI Incident Briefing", key=f"inv_btn_exp_{selected_case_id}", type="primary"):
-                with st.spinner("Synthesizing evidence-backed incident briefing..."):
+                with st.spinner("Synthesizing plain-English incident briefing..."):
                     st.session_state[exp_storage_key] = ai_service.explain_incident(result, bundle)
 
             if exp_storage_key in st.session_state:
@@ -881,10 +960,10 @@ elif selected_nav == "🔍 Live Incident Investigation":
                 st.markdown("</div>", unsafe_allow_html=True)
 
         with tab_ai_rep:
-            st.markdown("#### Formal 8-Section Incident Postmortem Report")
+            st.markdown("#### Formal Incident Postmortem & Action Plan")
             rep_storage_key = f"inv_rep_{selected_case_id}"
             if st.button("📑 Generate Executive Postmortem", key=f"inv_btn_rep_{selected_case_id}", type="primary"):
-                with st.spinner("Compiling standardized incident postmortem report..."):
+                with st.spinner("Compiling incident postmortem report..."):
                     st.session_state[rep_storage_key] = ai_service.generate_incident_report(result, bundle)
 
             if rep_storage_key in st.session_state:
@@ -912,17 +991,17 @@ elif selected_nav == "🔍 Live Incident Investigation":
                     f"""
                     <div class="ai-briefing-card">
                         <div style="font-weight: 800; font-size: 1.05rem; color: #93c5fd; margin-bottom: 10px;">
-                            📑 Standardized Postmortem Report | Generated in {rep_item.latency_ms:.0f} ms
+                            📑 Incident Postmortem Report | Generated in {rep_item.latency_ms:.0f} ms
                         </div>
                     """,
                     unsafe_allow_html=True,
                 )
-                st.markdown(rep_item.text)
+                st.markdown(resp_item.text)
                 st.markdown("</div>", unsafe_allow_html=True)
 
         # Interactive Telemetry Chart
         st.markdown("---")
-        st.markdown("### 📈 Supporting Telemetry Evidence")
+        st.markdown("### 📈 Metric Spike Evidence")
         chart_col, exp_col = st.columns([2, 1])
 
         with chart_col:
@@ -932,8 +1011,8 @@ elif selected_nav == "🔍 Live Incident Investigation":
                     m_df,
                     x="time",
                     y=top_cand.primary_metric,
-                    title=f"Telemetry Spike: {top_cand.primary_metric}",
-                    labels={"time": "Unix Timestamp", top_cand.primary_metric: "Metric Value"},
+                    title=f"Spike Detected on: {top_cand.primary_metric}",
+                    labels={"time": "Timestamp", top_cand.primary_metric: "Metric Value"},
                 )
                 fig_time.add_vline(
                     x=selected_case.inject_time,
@@ -943,48 +1022,54 @@ elif selected_nav == "🔍 Live Incident Investigation":
                     annotation_position="top left",
                 )
                 fig_time.update_layout(
-                    height=300,
+                    height=320,
                     margin=dict(l=20, r=20, t=35, b=20),
                     template="plotly_dark",
                     plot_bgcolor="#1e293b",
                     paper_bgcolor="#1e293b",
-                    font=dict(color="#cbd5e1"),
-                    xaxis=dict(rangeslider=dict(visible=True), type="linear"),
+                    font=dict(color="#cbd5e1", size=12),
+                    xaxis=dict(
+                        rangeslider=dict(visible=True, bgcolor="#0f172a", bordercolor="#334155"),
+                        type="linear",
+                        color="#cbd5e1",
+                        gridcolor="#334155",
+                    ),
+                    yaxis=dict(color="#cbd5e1", gridcolor="#334155"),
                 )
                 st.plotly_chart(fig_time, use_container_width=True, config={"displayModeBar": False})
 
         with exp_col:
-            st.markdown("**Evidence Trail Breakdown:**")
-            st.write(f"• **Peak Outlier Value**: `{top_cand.supporting_metrics[0].anomalous_peak}` (Baseline: `{top_cand.supporting_metrics[0].baseline_median}`)")
-            st.write(f"• **Relative Surge**: `+{top_cand.supporting_metrics[0].percent_change:.1f}%`")
-            st.write(f"• **Onset Lead Time**: Initial changepoint detected at `{top_cand.supporting_metrics[0].onset_delay_sec or 0}s` after trigger.")
+            st.markdown("**Why CloudSleuth Flagged This Service:**")
+            st.write(f"• **Peak Metric Value**: `{top_cand.supporting_metrics[0].anomalous_peak}` (Normal: `{top_cand.supporting_metrics[0].baseline_median}`)")
+            st.write(f"• **Spike Jump**: `+{top_cand.supporting_metrics[0].percent_change:.1f}%`")
+            st.write(f"• **Outage Start Time**: First spiked at `{top_cand.supporting_metrics[0].onset_delay_sec or 0}s` after incident began.")
             if "logs" in top_cand.multi_source_evidence:
-                st.write("• **Multi-Modal Logs**: Corroborated by high-frequency error bursts.")
-            st.write("• **Topological Role**: Root cause confirmed upstream of downstream latency.")
+                st.write("• **Error Logs**: Confirmed by a sudden flood of error logs.")
+            st.write("• **Service Role**: Failed first; downstream services slowed down only as a reaction.")
 
         # Ground-Truth Benchmark Audit Verification
         st.markdown("---")
-        st.markdown("### 🎯 Ground-Truth Benchmark Verification")
+        st.markdown("### 🎯 Accuracy Check: Did We Find the Real Outage?")
         gt = get_ground_truth(selected_case_id)
         gt_match = (top_cand.service == gt["service"])
 
         g_col1, g_col2, g_col3 = st.columns(3)
-        g_col1.metric("Predicted Root Cause", top_cand.service.upper())
-        g_col2.metric("Benchmark Ground Truth", f"{gt['service'].upper()} ({gt['fault'].upper()})")
-        g_col3.metric("Benchmark Hit Status", "MATCHED ✅" if gt_match else "MISSED ❌")
+        g_col1.metric("Detected Faulty Service", top_cand.service.upper())
+        g_col2.metric("Actual Real Outage", f"{gt['service'].upper()} ({gt['fault'].upper()})")
+        g_col3.metric("Verification Result", "MATCHED ✅" if gt_match else "MISSED ❌")
 
     # Raw Rankings Drawer
-    with st.expander("🔬 View Mathematical Rankings (All Candidate Services)", expanded=False):
+    with st.expander("🔍 View All Evaluated Services & Scores", expanded=False):
         c_table = []
         for c in result.ranked_services:
             c_table.append(
                 {
                     "Rank": f"#{c.rank}",
-                    "Microservice": c.service,
-                    "Robust Z-Score": f"{c.root_cause_score:.2f}",
+                    "Service": c.service,
+                    "Anomaly Score": f"{c.root_cause_score:.1f}x",
                     "Confidence": f"{c.confidence * 100:.0f}%",
-                    "Primary Metric": c.primary_metric,
-                    "Topological Role": "Downstream Symptom" if c.is_downstream_symptom else "Direct Culprit",
+                    "Metric That Spiked": c.primary_metric,
+                    "Status": "Delayed Reaction (Innocent)" if c.is_downstream_symptom else "🚨 Real Culprit",
                 }
             )
         st.dataframe(pd.DataFrame(c_table), use_container_width=True, hide_index=True)
@@ -1038,54 +1123,54 @@ elif selected_nav == "🌐 Service Dependency Topology":
 # 4. BENCHMARK RESULTS (RCAEVAL)
 # =============================================================
 elif selected_nav == "📊 Benchmark Evaluation (RCAEval)":
-    st.markdown('<h2>📊 Benchmark Evaluation & Metrics</h2>', unsafe_allow_html=True)
+    st.markdown('<h2>📊 Accuracy Test on Real Incident Benchmark</h2>', unsafe_allow_html=True)
     st.markdown(
-        '<p style="color: #94a3b8; font-size: 1.05rem;">Official peer-reviewed evaluation using the RCAEval procedure. Tested cases are strictly separated from ground-truth labels during prediction.</p>',
+        '<p style="color: #94a3b8; font-size: 1.05rem;">Tests detection accuracy across real microservice outage cases. Detection is performed completely blind without knowing the answer beforehand.</p>',
         unsafe_allow_html=True,
     )
 
     b_col1, b_col2, b_col3 = st.columns([2, 1, 1])
     with b_col1:
-        eval_method_choice = st.selectbox("Diagnosis Engine", ["CloudSleuth Statistical Engine", "Official RCAEval BARO Baseline"])
+        eval_method_choice = st.selectbox("Detection Engine", ["CloudSleuth Statistical Engine", "Official RCAEval BARO Baseline"])
     with b_col2:
-        num_cases = st.number_input("Number of Cases to Evaluate", min_value=1, max_value=len(available_cases), value=min(5, len(available_cases)))
+        num_cases = st.number_input("Number of Cases to Test", min_value=1, max_value=len(available_cases), value=min(5, len(available_cases)))
     with b_col3:
         st.write("")
         st.write("")
-        run_btn = st.button("▶️ Run Evaluation", type="primary", use_container_width=True)
+        run_btn = st.button("▶️ Run Accuracy Test", type="primary", use_container_width=True)
 
     if run_btn or "eval_summary" not in st.session_state:
-        with st.spinner(f"Evaluating {num_cases} real benchmark cases blindly..."):
+        with st.spinner(f"Testing {num_cases} real benchmark cases blindly..."):
             m_key = "baro" if "BARO" in eval_method_choice else "statistical"
             eval_summary: BenchmarkEvaluationSummary = evaluate_benchmark(case_limit=num_cases, method=m_key)
             st.session_state["eval_summary"] = eval_summary
 
     summary: BenchmarkEvaluationSummary = st.session_state["eval_summary"]
 
-    st.markdown("#### Overall Accuracy Metrics (Official Benchmark Formulation)")
+    st.markdown("#### Overall Accuracy Results")
     m1, m2, m3, m4, m5 = st.columns(5)
-    m1.metric("Cases Evaluated", summary.total_cases_evaluated)
-    m2.metric("Top-1 (Hit@1)", f"{summary.top_1_accuracy * 100:.1f}%", f"{summary.hit_at_1_count}/{summary.total_cases_evaluated} cases")
-    m3.metric("Hit@3", f"{summary.top_3_accuracy * 100:.1f}%", f"{summary.hit_at_3_count}/{summary.total_cases_evaluated} cases")
-    m4.metric("Hit@5", f"{summary.top_5_accuracy * 100:.1f}%", f"{summary.hit_at_5_count}/{summary.total_cases_evaluated} cases")
-    m5.metric("Avg@5 Score", f"{summary.average_at_5:.3f}", f"{summary.avg_latency_ms:.1f} ms/case")
+    m1.metric("Incidents Tested", summary.total_cases_evaluated)
+    m2.metric("Exact Match (Top-1)", f"{summary.top_1_accuracy * 100:.1f}%", f"{summary.hit_at_1_count}/{summary.total_cases_evaluated} cases")
+    m3.metric("In Top 3", f"{summary.top_3_accuracy * 100:.1f}%", f"{summary.hit_at_3_count}/{summary.total_cases_evaluated} cases")
+    m4.metric("In Top 5", f"{summary.top_5_accuracy * 100:.1f}%", f"{summary.hit_at_5_count}/{summary.total_cases_evaluated} cases")
+    m5.metric("Overall Score", f"{summary.average_at_5:.3f}", f"{summary.avg_latency_ms:.1f} ms/case")
 
     st.markdown("---")
-    st.markdown("#### Individual Audit Cases")
+    st.markdown("#### Individual Incident Results")
     case_rows = []
     for r in summary.evaluated_cases:
         case_rows.append(
             {
-                "Case Identifier": r.case_id,
-                "Suite": r.suite,
-                "True Root Cause": r.ground_truth_service,
-                "Fault": r.ground_truth_fault.upper(),
-                "Predicted Top-1": r.predicted_top1,
-                "Hit@1": "✅" if r.hit_at_1 else "❌",
-                "Hit@3": "✅" if r.hit_at_3 else "❌",
-                "Hit@5": "✅" if r.hit_at_5 else "❌",
-                "Rank of True Service": f"#{r.rank_of_true_service}" if r.rank_of_true_service else ">5",
-                "Diagnosis Speed": f"{r.latency_ms:.1f} ms",
+                "Incident ID": r.case_id,
+                "Category": r.suite,
+                "Actual Faulty Service": r.ground_truth_service,
+                "Failure Type": r.ground_truth_fault.upper(),
+                "Detected Service": r.predicted_top1,
+                "Correct (Top-1)": "✅" if r.hit_at_1 else "❌",
+                "In Top 3": "✅" if r.hit_at_3 else "❌",
+                "In Top 5": "✅" if r.hit_at_5 else "❌",
+                "Rank of Real Service": f"#{r.rank_of_true_service}" if r.rank_of_true_service else ">5",
+                "Analysis Speed": f"{r.latency_ms:.1f} ms",
             }
         )
     st.dataframe(pd.DataFrame(case_rows), use_container_width=True, hide_index=True)
@@ -1121,9 +1206,9 @@ elif selected_nav == "📋 Incident Audit History":
 # 6. ARCHITECTURE & WHY NOT RAW LLMS
 # =============================================================
 elif selected_nav == "💡 Architecture & Why Not Raw LLMs":
-    st.markdown('<h2>💡 Why CloudSleuth Architecture Wins</h2>', unsafe_allow_html=True)
+    st.markdown('<h2>💡 How CloudSleuth Works & Why It Beats Raw AI</h2>', unsafe_allow_html=True)
     st.markdown(
-        '<p style="color: #94a3b8; font-size: 1.05rem;">Why deterministic causal analysis is superior to black-box LLM guessing for production microservice incidents.</p>',
+        '<p style="color: #94a3b8; font-size: 1.05rem;">Why fast, evidence-based detection is superior to slow AI guessing during critical production outages.</p>',
         unsafe_allow_html=True,
     )
 
@@ -1132,47 +1217,46 @@ elif selected_nav == "💡 Architecture & Why Not Raw LLMs":
     with c_left:
         st.markdown(
             """
-            ### 1. The Microservice Dilemma
-            Modern cloud architectures feature dozens of microservices. When an outage occurs, requests fail across the entire topology.
-            Because services call each other in chains:
-            - A **memory leak** in `emailservice` causes its threadpool to lock up.
-            - `checkoutservice` waits for `emailservice` and times out.
-            - `frontend` latency spikes from 20ms to 900ms.
-            - **Alerts fire on Frontend**, but Frontend is 100% innocent!
+            ### 1. The Microservice Chain Reaction
+            Modern applications are split into dozens of connected services. When one service breaks, errors ripple everywhere:
+            - A **memory leak** in `emailservice` causes it to freeze.
+            - `checkoutservice` waits on `emailservice` and times out.
+            - `frontend` response time spikes from 20ms to 900ms.
+            - **Alerts fire on Frontend**, but Frontend did nothing wrong!
             """
         )
 
     with c_right:
         st.markdown(
             """
-            ### 2. Why Not Feed Raw Logs to an LLM?
-            In real production incidents:
-            - **Massive Data Volumes**: 100MB+ of raw logs per minute. LLM context windows overflow or cost $50+ per incident.
-            - **Extreme Hallucinations**: LLMs guess root causes from text frequency rather than timestamps or statistics.
-            - **Slow Latency**: LLM token inference takes 30–60 seconds while customer outages are actively happening.
+            ### 2. Why Not Just Feed Raw Logs to ChatGPT or Claude?
+            During real production emergencies:
+            - **Too Much Data**: Gigabytes of logs flood in every minute, overflowing AI context windows and costing huge API bills.
+            - **Guessing & Hallucinations**: Standard LLMs guess based on word frequency rather than timestamps and metrics.
+            - **Too Slow**: Standard LLM generation takes 30–60 seconds while customers are suffering downtime.
             
-            **CloudSleuth combines statistical z-scores, onset timing, and dependency topology to produce mathematically proven diagnoses in < 38 milliseconds.**
+            **CloudSleuth solves the root cause deterministically in < 38 milliseconds, then uses AI only to write clear fix instructions.**
             """
         )
 
     st.markdown("---")
-    st.markdown("### The 4-Stage CloudSleuth Pipeline")
+    st.markdown("### The 5-Step CloudSleuth Workflow")
     st.markdown(
         """
         ```
-        [ Telemetry Ingestion ] (Time-series metrics, log burst frequency, distributed trace latency)
+        [ 1. Collect Telemetry ] (CPU, memory, disk, network, error logs, and response times)
                      │
                      ▼
-        [ Robust Statistical Anomaly Detection ] (Outlier Z-scores invariant to variance & heavy tails)
+        [ 2. Spot Abnormal Spikes ] (Compare current metrics against normal healthy baseline)
                      │
                      ▼
-        [ Topological Disambiguation ] (Separate root cause internal exhaustion from downstream latency)
+        [ 3. Filter Out Innocent Victims ] (Separate the service that failed first from downstream delays)
                      │
                      ▼
-        [ Multi-Modal Evidence Fusion ] (Metrics + Log Error Spikes + Trace Errors)
+        [ 4. Verify Multiple Signals ] (Cross-check metrics with error logs and network traces)
                      │
                      ▼
-        [ Plain-English AI Briefing & Triage ] (What Broke, Where, Why, and Step-by-Step SRE Fix Guide)
+        [ 5. Plain-English Fix Plan ] (Explain what broke, why it broke, and step-by-step fix guide)
         ```
         """
     )
