@@ -996,7 +996,7 @@ elif selected_nav == "🔍 Live Incident Investigation":
                     """,
                     unsafe_allow_html=True,
                 )
-                st.markdown(resp_item.text)
+                st.markdown(rep_item.text)
                 st.markdown("</div>", unsafe_allow_html=True)
 
         # Interactive Telemetry Chart
