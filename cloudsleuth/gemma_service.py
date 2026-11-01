@@ -502,9 +502,11 @@ At timestamp `{bundle.inject_time}`, a critical production incident degraded ser
                         return "\n".join(clean_texts).strip()
                 return None
 
-            # Prioritize current model, followed by verified active Gemma models on Google AI Studio
-            models_to_try = [self.model_name]
-            fallback_models = ["gemma-4-26b-a4b-it", "gemma-4-31b-it", "gemma-2-27b-it", "gemini-2.5-flash"]
+            # Prioritize verified active models on Google AI Studio
+            models_to_try = []
+            if self.model_name and self.model_name != "gemma-4-31b-it":
+                models_to_try.append(self.model_name)
+            fallback_models = ["gemma-4-26b-a4b-it", "gemma-2-27b-it", "gemini-2.5-flash", "gemma-4-31b-it"]
             for m in fallback_models:
                 if m not in models_to_try:
                     models_to_try.append(m)
@@ -514,7 +516,7 @@ At timestamp `{bundle.inject_time}`, a critical production incident degraded ser
             for candidate_model in models_to_try:
                 endpoint = f"https://generativelanguage.googleapis.com/v1beta/models/{candidate_model}:generateContent"
                 try:
-                    resp = requests.post(endpoint, json=payload, headers=headers, timeout=50)
+                    resp = requests.post(endpoint, json=payload, headers=headers, timeout=8)
                     if resp.status_code == 200:
                         text = _extract_text(resp.json())
                         if text:
