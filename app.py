@@ -90,302 +90,455 @@ def get_cached_analysis(
     return res, bundle
 
 
-# Professional Enterprise CSS Theme (Datadog / Honeycomb inspired)
+# Initialize session states
+if "navigation_page" not in st.session_state:
+    st.session_state["navigation_page"] = "🏠 Home"
+if "diagnosis_history" not in st.session_state:
+    st.session_state["diagnosis_history"] = []
+if "active_case_id" not in st.session_state:
+    st.session_state["active_case_id"] = "sample_baro_emailservice_mem"
+
+# Enterprise Crystal-Clear Light Theme Tokens (Enforced)
+t_app_bg = "#f8fafc"
+t_main_text = "#0f172a"
+t_head_text = "#0f172a"
+t_muted_text = "#475569"
+t_card_bg = "#ffffff"
+t_card_border = "#cbd5e1"
+t_sidebar_bg = "#f1f5f9"
+t_sidebar_border = "#e2e8f0"
+t_sidebar_text = "#0f172a"
+t_metric_val = "#0284c7"
+t_metric_lbl = "#334155"
+t_hero_bg = "linear-gradient(135deg, #eff6ff 0%, #f0fdf4 100%)"
+t_hero_title = "#1e3a8a"
+t_hero_title_clip = "color: #1e3a8a !important;"
+t_hero_desc = "#334155"
+t_input_bg = "#ffffff"
+t_input_border = "#94a3b8"
+t_input_text = "#0f172a"
+t_menu_bg = "#ffffff"
+t_menu_hover = "#f1f5f9"
+t_code_bg = "#f1f5f9"
+t_code_border = "#cbd5e1"
+t_code_color = "#0369a1"
+t_tab_color = "#475569"
+t_tab_active = "#0284c7"
+t_expander_hdr = "#f8fafc"
+
+# Inject Dynamic High-Contrast Theme CSS
 st.markdown(
-    """
+    f"""
     <style>
-    .stApp {
-        background-color: #0f172a;
-        color: #e2e8f0;
+    .stApp {{
+        background-color: {t_app_bg};
+        color: {t_main_text};
         font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
-    }
+    }}
     
-    /* Global Headings */
-    h1, h2, h3, h4, h5, h6 {
-        color: #f8fafc !important;
+    /* Headings */
+    h1, h2, h3, h4, h5, h6 {{
+        color: {t_head_text} !important;
         font-weight: 700 !important;
         letter-spacing: -0.02em;
-    }
+    }}
+    p, span, label, div {{
+        color: {t_main_text};
+    }}
     
     /* Top Enterprise Header Bar */
-    .top-header-ticker {
+    .top-header-ticker {{
         display: flex;
         justify-content: space-between;
         align-items: center;
-        background: rgba(30, 41, 59, 0.7);
-        backdrop-filter: blur(8px);
-        border: 1px solid #334155;
+        background: {t_card_bg};
+        border: 1px solid {t_card_border};
         border-radius: 8px;
         padding: 0.6rem 1.2rem;
         margin-bottom: 1.2rem;
         font-size: 0.85rem;
-    }
-    .ticker-item {
+        box-shadow: 0 1px 4px rgba(0,0,0,0.06);
+    }}
+    .ticker-item {{
         display: inline-flex;
         align-items: center;
         gap: 6px;
-        color: #94a3b8;
-    }
-    .ticker-value {
-        color: #f1f5f9;
+        color: {t_muted_text};
+    }}
+    .ticker-value {{
+        color: {t_head_text};
         font-weight: 700;
-    }
+    }}
     
     /* Hero Banner */
-    .hero-banner {
-        background: linear-gradient(135deg, #1e293b 0%, #0f172a 50%, #1e1b4b 100%);
-        border: 1px solid #334155;
+    .hero-banner {{
+        background: {t_hero_bg};
+        border: 1px solid {t_card_border};
         border-radius: 12px;
         padding: 1.8rem 2rem;
-        color: #ffffff;
+        color: {t_main_text};
         margin-bottom: 1.5rem;
-        box-shadow: 0 10px 30px rgba(0, 0, 0, 0.25);
-    }
-    .hero-banner h1 {
+        box-shadow: 0 4px 16px rgba(0, 0, 0, 0.08);
+    }}
+    .hero-banner h1 {{
         font-size: 2.1rem;
         margin-bottom: 0.35rem;
-        background: linear-gradient(90deg, #ffffff, #93c5fd);
-        -webkit-background-clip: text;
-        -webkit-text-fill-color: transparent;
-    }
-    .hero-banner p {
-        color: #94a3b8;
+        {t_hero_title_clip}
+        font-weight: 800 !important;
+    }}
+    .hero-banner p {{
+        color: {t_hero_desc} !important;
         font-size: 1.05rem;
         margin-bottom: 0;
         line-height: 1.5;
-    }
+    }}
     
     /* Enterprise KPI & 4-W Cards */
-    .four-w-card {
-        background: #1e293b;
-        border: 1px solid #334155;
+    .four-w-card {{
+        background: {t_card_bg};
+        border: 1.5px solid {t_card_border};
         border-radius: 10px;
         padding: 1.25rem;
         height: 100%;
-        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+        box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
         transition: transform 0.15s ease, border-color 0.15s ease;
-    }
-    .four-w-card:hover {
+    }}
+    .four-w-card:hover {{
         transform: translateY(-2px);
-        border-color: #60a5fa;
-    }
-    .four-w-title {
+        border-color: #3b82f6;
+    }}
+    .four-w-title {{
         font-size: 0.8rem;
         text-transform: uppercase;
         font-weight: 800;
         letter-spacing: 0.06em;
         margin-bottom: 0.4rem;
-    }
-    .four-w-value {
+    }}
+    .four-w-value {{
         font-size: 1.45rem;
         font-weight: 800;
-        color: #f8fafc;
+        color: {t_head_text};
         margin-bottom: 0.35rem;
-    }
-    .four-w-desc {
+    }}
+    .four-w-desc {{
         font-size: 0.88rem;
-        color: #94a3b8;
+        color: {t_muted_text};
         line-height: 1.45;
-    }
+    }}
     
     /* Outage Storyboard Step Card */
-    .scene-step-card {
-        background: #1e293b;
-        border: 1px solid #334155;
+    .scene-step-card {{
+        background: {t_card_bg};
+        border: 1.5px solid {t_card_border};
         border-radius: 10px;
         padding: 1.2rem 1.4rem;
         margin-bottom: 1rem;
         border-left: 5px solid #3b82f6;
-        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
-    }
+        box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
+    }}
+    .scene-step-card p {{
+        color: {t_muted_text} !important;
+    }}
     
     /* Badges */
-    .badge-root {
-        background-color: rgba(239, 68, 68, 0.2);
-        color: #fca5a5;
-        border: 1px solid #ef4444;
+    .badge-root {{
+        background-color: rgba(239, 68, 68, 0.15);
+        color: #ef4444;
+        border: 1.5px solid #ef4444;
         font-weight: 700;
         padding: 0.25rem 0.65rem;
         border-radius: 6px;
         font-size: 0.85rem;
-    }
-    .badge-symptom {
-        background-color: rgba(245, 158, 11, 0.2);
-        color: #fcd34d;
-        border: 1px solid #f59e0b;
+    }}
+    .badge-symptom {{
+        background-color: rgba(245, 158, 11, 0.15);
+        color: #d97706;
+        border: 1.5px solid #f59e0b;
         font-weight: 700;
         padding: 0.25rem 0.65rem;
         border-radius: 6px;
         font-size: 0.85rem;
-    }
-    .badge-healthy {
-        background-color: rgba(16, 185, 129, 0.2);
-        color: #6ee7b7;
-        border: 1px solid #10b981;
+    }}
+    .badge-healthy {{
+        background-color: rgba(16, 185, 129, 0.15);
+        color: #059669;
+        border: 1.5px solid #10b981;
         font-weight: 700;
         padding: 0.25rem 0.65rem;
         border-radius: 6px;
         font-size: 0.85rem;
-    }
+    }}
     
     /* AI Briefing Card */
-    .ai-briefing-card {
-        background: #1e293b;
-        border: 1px solid #3b82f6;
+    .ai-briefing-card {{
+        background: {t_card_bg};
+        border: 1.5px solid #3b82f6;
         border-left: 5px solid #3b82f6;
         border-radius: 10px;
         padding: 1.5rem;
         margin-top: 1rem;
-        box-shadow: 0 4px 16px rgba(59, 130, 246, 0.12);
-        color: #e2e8f0;
-    }
+        box-shadow: 0 4px 16px rgba(59, 130, 246, 0.1);
+        color: {t_main_text};
+    }}
+    .ai-briefing-card * {{
+        color: {t_main_text} !important;
+    }}
     
-    /* Sidebar Dark Theme & Full Text Visibility */
-    [data-testid="stSidebar"], section[data-testid="stSidebar"], [data-testid="stSidebar"] > div:first-child {
-        background-color: #0b1329 !important;
-        border-right: 1px solid #1e293b !important;
-    }
+    /* Sidebar Theme & Full Text Visibility */
+    [data-testid="stSidebar"], section[data-testid="stSidebar"], [data-testid="stSidebar"] > div:first-child {{
+        background-color: {t_sidebar_bg} !important;
+        border-right: 1px solid {t_sidebar_border} !important;
+    }}
     [data-testid="stSidebar"] h1, 
     [data-testid="stSidebar"] h2, 
     [data-testid="stSidebar"] h3, 
-    [data-testid="stSidebar"] h4 {
-        color: #f8fafc !important;
-    }
+    [data-testid="stSidebar"] h4 {{
+        color: {t_head_text} !important;
+    }}
     [data-testid="stSidebar"] p, 
     [data-testid="stSidebar"] span, 
     [data-testid="stSidebar"] label,
     [data-testid="stSidebar"] .stMarkdown,
-    [data-testid="stSidebar"] div {
-        color: #cbd5e1 !important;
-    }
-    [data-testid="stSidebar"] .stRadio label span {
-        color: #f8fafc !important;
-        font-weight: 500 !important;
-    }
-    [data-testid="stSidebar"] .stCaption, [data-testid="stSidebar"] small {
-        color: #94a3b8 !important;
-    }
+    [data-testid="stSidebar"] div {{
+        color: {t_sidebar_text} !important;
+    }}
+    [data-testid="stSidebar"] .stRadio label span {{
+        color: {t_sidebar_text} !important;
+        font-weight: 600 !important;
+    }}
+    [data-testid="stSidebar"] .stCaption, [data-testid="stSidebar"] small {{
+        color: {t_muted_text} !important;
+    }}
 
-    /* High-Contrast Visible Action & Scenario Buttons */
-    button[kind="secondary"], .stButton > button {
-        background-color: #1e293b !important;
-        color: #f8fafc !important;
-        border: 1px solid #475569 !important;
+    /* Buttons */
+    button[kind="secondary"], .stButton > button {{
+        background-color: {t_card_bg} !important;
+        color: {t_main_text} !important;
+        border: 1.5px solid {t_card_border} !important;
         border-radius: 8px !important;
         font-weight: 600 !important;
-        box-shadow: 0 2px 6px rgba(0, 0, 0, 0.2);
-    }
-    button[kind="secondary"]:hover, .stButton > button:hover {
-        background-color: #334155 !important;
-        border-color: #60a5fa !important;
+        box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
+    }}
+    button[kind="secondary"]:hover, .stButton > button:hover {{
+        background-color: {t_menu_hover} !important;
+        border-color: #3b82f6 !important;
+        color: {t_metric_val} !important;
+    }}
+    button[kind="primary"] {{
+        background-color: #dc2626 !important;
         color: #ffffff !important;
-    }
-    button[kind="primary"] {
-        background-color: #ef4444 !important;
-        color: #ffffff !important;
-        border: 1px solid #dc2626 !important;
+        border: 1px solid #b91c1c !important;
         border-radius: 8px !important;
         font-weight: 700 !important;
-        box-shadow: 0 2px 8px rgba(239, 68, 68, 0.3);
-    }
-    button[kind="primary"]:hover {
-        background-color: #dc2626 !important;
-        border-color: #b91c1c !important;
-    }
+        box-shadow: 0 2px 8px rgba(220, 38, 38, 0.25);
+    }}
+    button[kind="primary"]:hover {{
+        background-color: #b91c1c !important;
+    }}
 
-    /* Crisp High-Contrast Metric Cards */
-    [data-testid="stMetric"] {
-        background-color: #1e293b !important;
-        border: 1px solid #334155 !important;
+    /* High-Contrast Metric Cards */
+    [data-testid="stMetric"] {{
+        background-color: {t_card_bg} !important;
+        border: 1.5px solid {t_card_border} !important;
         border-radius: 10px !important;
         padding: 0.9rem 1.2rem !important;
-        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15) !important;
-    }
+        box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05) !important;
+    }}
     [data-testid="stMetricLabel"],
     [data-testid="stMetricLabel"] *,
     [data-testid="stMetricLabel"] p,
-    [data-testid="stMetricLabel"] label {
-        color: #94a3b8 !important;
+    [data-testid="stMetricLabel"] label {{
+        color: {t_metric_lbl} !important;
         font-size: 0.85rem !important;
         font-weight: 700 !important;
         letter-spacing: 0.03em !important;
-    }
+    }}
     [data-testid="stMetricValue"],
     [data-testid="stMetricValue"] *,
-    [data-testid="stMetricValue"] div {
-        color: #38bdf8 !important;
+    [data-testid="stMetricValue"] div {{
+        color: {t_metric_val} !important;
         font-size: 1.55rem !important;
         font-weight: 800 !important;
         letter-spacing: -0.01em !important;
-    }
+    }}
     [data-testid="stMetricDelta"],
-    [data-testid="stMetricDelta"] * {
-        color: #6ee7b7 !important;
+    [data-testid="stMetricDelta"] * {{
+        color: #16a34a !important;
         font-weight: 600 !important;
-    }
+    }}
 
-    /* Expander Dark Theme & Bright Legible Text */
-    [data-testid="stExpander"] {
-        background-color: #1e293b !important;
-        border: 1px solid #334155 !important;
+    /* Expander Dark/Light Theme & Crisp Legible Text */
+    [data-testid="stExpander"] {{
+        background-color: {t_card_bg} !important;
+        border: 1.5px solid {t_card_border} !important;
         border-radius: 8px !important;
         overflow: hidden !important;
         margin-top: 0.75rem !important;
-    }
-    [data-testid="stExpander"] details {
-        background-color: #1e293b !important;
-    }
-    [data-testid="stExpander"] summary {
-        background-color: #1e293b !important;
-        color: #f8fafc !important;
-        font-weight: 600 !important;
-        padding: 0.7rem 1rem !important;
-    }
-    [data-testid="stExpander"] summary:hover {
-        background-color: #334155 !important;
-        color: #ffffff !important;
-    }
+    }}
+    [data-testid="stExpander"] details {{
+        background-color: {t_card_bg} !important;
+    }}
+    [data-testid="stExpander"] summary {{
+        background-color: {t_expander_hdr} !important;
+        color: {t_head_text} !important;
+        font-weight: 700 !important;
+        padding: 0.75rem 1rem !important;
+    }}
+    [data-testid="stExpander"] summary:hover {{
+        background-color: {t_menu_hover} !important;
+        color: {t_metric_val} !important;
+    }}
     [data-testid="stExpander"] summary span,
-    [data-testid="stExpander"] summary p {
-        color: #f8fafc !important;
-        font-weight: 600 !important;
-    }
-    [data-testid="stExpander"] summary svg {
-        fill: #94a3b8 !important;
-    }
-    [data-testid="stExpander"] [data-testid="stExpanderDetails"] {
-        background-color: #0f172a !important;
-        border-top: 1px solid #334155 !important;
+    [data-testid="stExpander"] summary p {{
+        color: {t_head_text} !important;
+        font-weight: 700 !important;
+    }}
+    [data-testid="stExpander"] summary svg {{
+        fill: {t_muted_text} !important;
+    }}
+    [data-testid="stExpander"] [data-testid="stExpanderDetails"] {{
+        background-color: {t_card_bg} !important;
+        border-top: 1px solid {t_card_border} !important;
         padding: 1rem !important;
-    }
-    [data-testid="stExpander"] [data-testid="stExpanderDetails"] * {
-        color: #e2e8f0 !important;
-    }
+    }}
+    [data-testid="stExpander"] [data-testid="stExpanderDetails"] * {{
+        color: {t_main_text} !important;
+    }}
 
-    /* Tabs Styling */
-    button[data-baseweb="tab"] {
-        color: #94a3b8 !important;
+    /* Tabs Styling - Bright & High Contrast */
+    button[data-baseweb="tab"] {{
+        color: {t_tab_color} !important;
         font-weight: 600 !important;
-    }
-    button[data-baseweb="tab"][aria-selected="true"] {
-        color: #60a5fa !important;
-        border-bottom-color: #3b82f6 !important;
-    }
+        font-size: 0.95rem !important;
+    }}
+    button[data-baseweb="tab"]:hover {{
+        color: {t_head_text} !important;
+    }}
+    button[data-baseweb="tab"][aria-selected="true"] {{
+        color: {t_tab_active} !important;
+        border-bottom: 2px solid {t_tab_active} !important;
+        font-weight: 700 !important;
+    }}
+    button[data-baseweb="tab"] div,
+    button[data-baseweb="tab"] p,
+    button[data-baseweb="tab"] span {{
+        color: inherit !important;
+    }}
+
+    /* BaseWeb Selectbox, Dropdowns, and Inputs */
+    [data-testid="stSelectbox"] label,
+    .stSelectbox label,
+    .stSlider label,
+    .stCheckbox label {{
+        color: {t_head_text} !important;
+        -webkit-text-fill-color: {t_head_text} !important;
+        font-weight: 700 !important;
+    }}
+    div[data-baseweb="select"] {{
+        background-color: {t_input_bg} !important;
+        border-radius: 8px !important;
+    }}
+    div[data-baseweb="select"] > div {{
+        background-color: {t_input_bg} !important;
+        border: 1.5px solid {t_input_border} !important;
+        border-radius: 8px !important;
+        color: {t_input_text} !important;
+        -webkit-text-fill-color: {t_input_text} !important;
+    }}
+    div[data-baseweb="select"] * {{
+        color: {t_input_text} !important;
+        -webkit-text-fill-color: {t_input_text} !important;
+        font-weight: 600 !important;
+        opacity: 1 !important;
+    }}
+    div[data-baseweb="select"] input {{
+        color: {t_input_text} !important;
+        -webkit-text-fill-color: {t_input_text} !important;
+        opacity: 1 !important;
+    }}
+    div[data-baseweb="select"] svg {{
+        fill: {t_muted_text} !important;
+    }}
+    /* Dropdown popover menu */
+    ul[data-baseweb="menu"],
+    div[data-baseweb="popover"],
+    div[data-baseweb="popover"] > div {{
+        background-color: {t_menu_bg} !important;
+        border: 1.5px solid {t_card_border} !important;
+        border-radius: 8px !important;
+        box-shadow: 0 10px 25px rgba(0, 0, 0, 0.12) !important;
+    }}
+    li[data-baseweb="menu-item"] {{
+        background-color: {t_menu_bg} !important;
+        color: {t_input_text} !important;
+        -webkit-text-fill-color: {t_input_text} !important;
+        padding: 0.65rem 1rem !important;
+        font-weight: 500 !important;
+    }}
+    li[data-baseweb="menu-item"]:hover,
+    li[data-baseweb="menu-item"][aria-selected="true"] {{
+        background-color: {t_menu_hover} !important;
+        color: {t_metric_val} !important;
+        -webkit-text-fill-color: {t_metric_val} !important;
+    }}
+    li[data-baseweb="menu-item"] * {{
+        color: {t_input_text} !important;
+        -webkit-text-fill-color: {t_input_text} !important;
+    }}
+    li[data-baseweb="menu-item"]:hover * {{
+        color: {t_metric_val} !important;
+        -webkit-text-fill-color: {t_metric_val} !important;
+    }}
+
+    /* Inline Code Badges */
+    code {{
+        background-color: {t_code_bg} !important;
+        color: {t_code_color} !important;
+        border: 1px solid {t_code_border} !important;
+        padding: 0.15rem 0.45rem !important;
+        border-radius: 6px !important;
+        font-weight: 700 !important;
+        font-size: 0.88rem !important;
+    }}
+
+    /* Prevent Streamlit from dimming elements while AI synthesis is running */
+    .stApp [data-testid="stVerticalBlock"] > div {{
+        opacity: 1 !important;
+        transition: none !important;
+    }}
+    .stApp [data-test-script-state="running"] *,
+    [data-test-script-state="running"] .element-container,
+    [data-test-script-state="running"] [data-testid="stVerticalBlock"] > div,
+    [data-test-script-state="running"] [data-testid="stMetric"],
+    [data-test-script-state="running"] [data-testid="stExpander"],
+    [data-test-script-state="running"] .plotly,
+    [data-test-script-state="running"] [data-testid="stPlotlyChart"],
+    [data-test-script-state="running"] .stMarkdown,
+    [data-test-script-state="running"] div {{
+        opacity: 1 !important;
+        filter: none !important;
+    }}
+    .st-emotion-cache-1wmy9hl,
+    .st-emotion-cache-1cypcdb {{
+        opacity: 1 !important;
+    }}
 
     /* Streamlit UI Tweaks */
-    div[data-testid="stSidebarNav"] { display: none; }
-    .stSelectbox label, .stSlider label { color: #cbd5e1 !important; font-weight: 600; }
-    .stDownloadButton button {
-        background-color: #1e293b !important;
-        color: #f8fafc !important;
-        border: 1px solid #3b82f6 !important;
+    div[data-testid="stSidebarNav"] {{ display: none; }}
+    .stSelectbox label, .stSlider label {{ color: {t_head_text} !important; font-weight: 700; }}
+    div[data-baseweb="slider"] * {{ color: {t_head_text} !important; }}
+    .stDownloadButton button {{
+        background-color: {t_card_bg} !important;
+        color: {t_main_text} !important;
+        border: 1.5px solid {t_card_border} !important;
         border-radius: 8px !important;
         font-weight: 600 !important;
-    }
-    .stDownloadButton button:hover {
-        background-color: #2563eb !important;
-        color: #ffffff !important;
-    }
+    }}
+    .stDownloadButton button:hover {{
+        background-color: {t_menu_hover} !important;
+        border-color: #3b82f6 !important;
+        color: {t_metric_val} !important;
+    }}
     </style>
     """,
     unsafe_allow_html=True,
@@ -394,13 +547,7 @@ st.markdown(
 # Initialize AI Service
 ai_service = GemmaService()
 
-# Initialize session states
-if "navigation_page" not in st.session_state:
-    st.session_state["navigation_page"] = "🏠 Home"
-if "diagnosis_history" not in st.session_state:
-    st.session_state["diagnosis_history"] = []
-if "active_case_id" not in st.session_state:
-    st.session_state["active_case_id"] = "sample_baro_emailservice_mem"
+
 
 
 def format_ts(ts: int) -> str:
@@ -463,7 +610,7 @@ def render_interactive_topology(
     edge_trace = go.Scatter(
         x=edge_x,
         y=edge_y,
-        line=dict(width=1.5, color="#475569"),
+        line=dict(width=1.8, color="#94a3b8"),
         hoverinfo="none",
         mode="lines",
     )
@@ -506,13 +653,13 @@ def render_interactive_topology(
         mode="markers+text",
         text=node_texts,
         textposition="bottom center",
-        textfont=dict(color="#e2e8f0", size=11),
+        textfont=dict(color="#0f172a", size=11),
         hovertext=node_hover,
         hoverinfo="text",
         marker=dict(
             color=node_colors,
             size=node_sizes,
-            line=dict(width=2, color="#0f172a"),
+            line=dict(width=2, color="#ffffff"),
             opacity=0.95,
         ),
     )
@@ -522,15 +669,15 @@ def render_interactive_topology(
         layout=go.Layout(
             title=dict(
                 text="<b>Microservice Dependency Topology & Failure Cascade Map</b>",
-                font=dict(size=15, color="#f1f5f9"),
+                font=dict(size=15, color="#0f172a"),
             ),
             showlegend=False,
             hovermode="closest",
             margin=dict(b=30, l=15, r=15, t=45),
             xaxis=dict(showgrid=False, zeroline=False, showticklabels=False, range=[-0.05, 1.05]),
             yaxis=dict(showgrid=False, zeroline=False, showticklabels=False, range=[-0.05, 1.05]),
-            plot_bgcolor="rgba(15, 23, 42, 0.6)",
-            paper_bgcolor="rgba(15, 23, 42, 0.0)",
+            plot_bgcolor="#ffffff",
+            paper_bgcolor="#ffffff",
             height=340,
         ),
     )
@@ -554,7 +701,7 @@ st.markdown(
             <span>⚡</span> Causal Latency: <span class="ticker-value">&lt; 38 ms P99</span>
         </div>
         <div class="ticker-item">
-            <span>🤖</span> AI Engine: <span class="ticker-value" style="color: #6ee7b7;">Gemma ({ai_service.model_name})</span>
+            <span>🤖</span> AI Engine: <span class="ticker-value" style="color: #059669;">Gemma ({ai_service.model_name})</span>
         </div>
         <div class="ticker-item">
             <span>🛡️</span> Ground-Truth: <span class="ticker-value">100% Strict Isolation</span>
@@ -571,12 +718,12 @@ st.markdown(
 # SIDEBAR NAVIGATION
 # -------------------------------------------------------------
 st.sidebar.markdown(
-    """
-    <div style="display: flex; align-items: center; gap: 12px; margin-bottom: 20px;">
+    f"""
+    <div style="display: flex; align-items: center; gap: 12px; margin-bottom: 16px;">
         <span style="font-size: 2.2rem;">⚡</span>
         <div>
-            <div style="font-size: 1.4rem; font-weight: 800; color: #f8fafc; line-height: 1.1;">CloudSleuth</div>
-            <div style="font-size: 0.8rem; color: #94a3b8; font-weight: 600;">Incident RCA Platform</div>
+            <div style="font-size: 1.4rem; font-weight: 800; color: {t_head_text}; line-height: 1.1;">CloudSleuth</div>
+            <div style="font-size: 0.8rem; color: {t_muted_text}; font-weight: 600;">Incident RCA Platform</div>
         </div>
     </div>
     """,
@@ -592,17 +739,15 @@ nav_options = [
     "💡 Architecture & Why Not Raw LLMs",
 ]
 
-curr_idx = 0
-if st.session_state["navigation_page"] in nav_options:
-    curr_idx = nav_options.index(st.session_state["navigation_page"])
+if "navigation_page" not in st.session_state or st.session_state["navigation_page"] not in nav_options:
+    st.session_state["navigation_page"] = nav_options[0]
 
 selected_nav = st.sidebar.radio(
     "Navigation",
     nav_options,
-    index=curr_idx,
+    key="navigation_page",
     label_visibility="collapsed",
 )
-st.session_state["navigation_page"] = selected_nav
 
 st.sidebar.markdown("---")
 st.sidebar.markdown("### ⚙️ Monitored Signals")
@@ -660,9 +805,9 @@ if selected_nav == "🏠 Home":
         st.markdown(
             f"""
             <div class="scene-step-card" style="border-left-color: #ef4444; height: 100%;">
-                <div style="font-size: 0.8rem; font-weight: 800; color: #f87171; text-transform: uppercase;">1. The 3:00 AM Alert</div>
-                <div style="font-size: 1.15rem; font-weight: 700; color: #f1f5f9; margin: 4px 0;">🚨 Outage Alert: <code>frontend</code></div>
-                <p style="color: #94a3b8; font-size: 0.88rem; margin-bottom: 0;">
+                <div style="font-size: 0.8rem; font-weight: 800; color: #dc2626; text-transform: uppercase;">1. The 3:00 AM Alert</div>
+                <div style="font-size: 1.15rem; font-weight: 700; color: {t_head_text}; margin: 4px 0;">🚨 Outage Alert: <code>frontend</code></div>
+                <p style="color: {t_muted_text}; font-size: 0.88rem; margin-bottom: 0;">
                     User response times suddenly slow down by 500% at timestamp <strong>{active_case.inject_time}</strong>.
                     Standard monitoring tools mistakenly blame the frontend.
                 </p>
@@ -675,9 +820,9 @@ if selected_nav == "🏠 Home":
         st.markdown(
             f"""
             <div class="scene-step-card" style="border-left-color: #f59e0b; height: 100%;">
-                <div style="font-size: 0.8rem; font-weight: 800; color: #fbbf24; text-transform: uppercase;">2. The Common Mistake</div>
-                <div style="font-size: 1.15rem; font-weight: 700; color: #f1f5f9; margin: 4px 0;">❌ Mistake: Blaming Frontend</div>
-                <p style="color: #94a3b8; font-size: 0.88rem; margin-bottom: 0;">
+                <div style="font-size: 0.8rem; font-weight: 800; color: #d97706; text-transform: uppercase;">2. The Common Mistake</div>
+                <div style="font-size: 1.15rem; font-weight: 700; color: {t_head_text}; margin: 4px 0;">❌ Mistake: Blaming Frontend</div>
+                <p style="color: {t_muted_text}; font-size: 0.88rem; margin-bottom: 0;">
                     The frontend is completely healthy! It is just waiting on a stuck backend service.
                     Pasting logs into a standard AI takes 60 seconds and guesses wrong.
                 </p>
@@ -690,9 +835,9 @@ if selected_nav == "🏠 Home":
         st.markdown(
             f"""
             <div class="scene-step-card" style="border-left-color: #10b981; height: 100%;">
-                <div style="font-size: 0.8rem; font-weight: 800; color: #34d399; text-transform: uppercase;">3. CloudSleuth Answer</div>
-                <div style="font-size: 1.15rem; font-weight: 700; color: #f1f5f9; margin: 4px 0;">🎯 Real Culprit: <code>{top_cand.service.upper() if top_cand else 'Unknown'}</code></div>
-                <p style="color: #94a3b8; font-size: 0.88rem; margin-bottom: 0;">
+                <div style="font-size: 0.8rem; font-weight: 800; color: #059669; text-transform: uppercase;">3. CloudSleuth Answer</div>
+                <div style="font-size: 1.15rem; font-weight: 700; color: {t_head_text}; margin: 4px 0;">🎯 Real Culprit: <code>{top_cand.service.upper() if top_cand else 'Unknown'}</code></div>
+                <p style="color: {t_muted_text}; font-size: 0.88rem; margin-bottom: 0;">
                     CloudSleuth detected the exact resource exhaustion the second it started (<strong>T+0s</strong>).
                     Identified in <strong>&lt; 38 milliseconds</strong>.
                 </p>
@@ -743,10 +888,10 @@ if selected_nav == "🏠 Home":
     fig_dual.update_layout(
         height=280,
         margin=dict(l=20, r=20, t=35, b=20),
-        template="plotly_dark",
-        plot_bgcolor="#1e293b",
-        paper_bgcolor="#1e293b",
-        font=dict(color="#cbd5e1"),
+        template="plotly_white",
+        plot_bgcolor="#ffffff",
+        paper_bgcolor="#ffffff",
+        font=dict(color="#0f172a"),
         showlegend=False,
     )
     st.plotly_chart(fig_dual, use_container_width=True, config={"displayModeBar": False})
@@ -762,12 +907,12 @@ if selected_nav == "🏠 Home":
         gt_match = (top_cand.service == gt["service"])
         st.markdown(
             f"""
-            <div style="background: #1e293b; border: 1px solid #334155; border-radius: 8px; padding: 10px 16px; display: flex; justify-content: space-between; align-items: center;">
+            <div style="background: {t_card_bg}; border: 1.5px solid {t_card_border}; border-radius: 8px; padding: 10px 16px; display: flex; justify-content: space-between; align-items: center; box-shadow: 0 1px 4px rgba(0,0,0,0.05);">
                 <div>
-                    <div style="font-size: 0.75rem; color: #94a3b8; font-weight: 700;">ACCURACY CHECK</div>
-                    <div style="font-weight: 800; font-size: 1.05rem; color: #f8fafc;">Detected: <code>{top_cand.service}</code> | Actual Cause: <code>{gt['service']}</code></div>
+                    <div style="font-size: 0.75rem; color: {t_muted_text}; font-weight: 700;">ACCURACY CHECK</div>
+                    <div style="font-weight: 800; font-size: 1.05rem; color: {t_head_text};">Detected: <code>{top_cand.service}</code> | Actual Cause: <code>{gt['service']}</code></div>
                 </div>
-                <span class="badge-root" style="background-color: {'rgba(16, 185, 129, 0.2)' if gt_match else 'rgba(239, 68, 68, 0.2)'}; color: {'#6ee7b7' if gt_match else '#fca5a5'}; border-color: {'#10b981' if gt_match else '#ef4444'}; font-size: 0.95rem;">
+                <span class="badge-root" style="background-color: {'rgba(16, 185, 129, 0.2)' if gt_match else 'rgba(239, 68, 68, 0.2)'}; color: {'#059669' if gt_match else '#dc2626'}; border-color: {'#10b981' if gt_match else '#ef4444'}; font-size: 0.95rem;">
                     {'MATCHED ✅' if gt_match else 'MISSED ❌'}
                 </span>
             </div>
@@ -787,8 +932,8 @@ if selected_nav == "🏠 Home":
             f"""
             <div class="ai-briefing-card">
                 <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px;">
-                    <span style="font-weight: 800; font-size: 1.1rem; color: #93c5fd;">📋 CloudSleuth AI Incident Briefing</span>
-                    <span style="background: rgba(16, 185, 129, 0.2); color: #6ee7b7; border: 1px solid #10b981; padding: 3px 10px; border-radius: 12px; font-size: 0.8rem; font-weight: 700;">
+                    <span style="font-weight: 800; font-size: 1.1rem; color: #0284c7;">📋 CloudSleuth AI Incident Briefing</span>
+                    <span style="background: rgba(16, 185, 129, 0.2); color: #059669; border: 1px solid #10b981; padding: 3px 10px; border-radius: 12px; font-size: 0.8rem; font-weight: 700;">
                         🟢 Google Gemma ({resp_obj.model_name}) • Live Connected • {resp_obj.latency_ms:.0f} ms
                     </span>
                 </div>
@@ -805,7 +950,7 @@ if selected_nav == "🏠 Home":
 elif selected_nav == "🔍 Live Incident Investigation":
     st.markdown('<h2>🔍 Live Incident Investigation</h2>', unsafe_allow_html=True)
     st.markdown(
-        '<p style="color: #94a3b8; font-size: 1.05rem;">Select any incident to identify which service broke, see when the failure started, and get step-by-step fix recommendations in plain English.</p>',
+        f'<p style="color: {t_muted_text}; font-size: 1.05rem;">Select any incident to identify which service broke, see when the failure started, and get step-by-step fix recommendations in plain English.</p>',
         unsafe_allow_html=True,
     )
 
@@ -956,7 +1101,7 @@ elif selected_nav == "🔍 Live Incident Investigation":
                 st.markdown(
                     f"""
                     <div class="ai-briefing-card">
-                        <div style="font-weight: 800; font-size: 1.05rem; color: #93c5fd; margin-bottom: 10px;">
+                        <div style="font-weight: 800; font-size: 1.05rem; color: #0284c7; margin-bottom: 10px;">
                             📋 Incident Briefing | Generated in {resp_item.latency_ms:.0f} ms
                         </div>
                     """,
@@ -996,7 +1141,7 @@ elif selected_nav == "🔍 Live Incident Investigation":
                 st.markdown(
                     f"""
                     <div class="ai-briefing-card">
-                        <div style="font-weight: 800; font-size: 1.05rem; color: #93c5fd; margin-bottom: 10px;">
+                        <div style="font-weight: 800; font-size: 1.05rem; color: #0284c7; margin-bottom: 10px;">
                             📑 Incident Postmortem Report | Generated in {rep_item.latency_ms:.0f} ms
                         </div>
                     """,
@@ -1028,19 +1173,20 @@ elif selected_nav == "🔍 Live Incident Investigation":
                     annotation_position="top left",
                 )
                 fig_time.update_layout(
+                    title=dict(text=f"Spike Detected on: {top_cand.primary_metric}", font=dict(color="#0f172a", size=14)),
                     height=320,
-                    margin=dict(l=20, r=20, t=35, b=20),
-                    template="plotly_dark",
-                    plot_bgcolor="#1e293b",
-                    paper_bgcolor="#1e293b",
-                    font=dict(color="#cbd5e1", size=12),
+                    margin=dict(l=20, r=20, t=45, b=20),
+                    template="plotly_white",
+                    plot_bgcolor="#ffffff",
+                    paper_bgcolor="#ffffff",
+                    font=dict(color="#0f172a", size=12),
                     xaxis=dict(
-                        rangeslider=dict(visible=True, bgcolor="#0f172a", bordercolor="#334155"),
+                        rangeslider=dict(visible=True, bgcolor="#f1f5f9", bordercolor="#cbd5e1"),
                         type="linear",
-                        color="#cbd5e1",
-                        gridcolor="#334155",
+                        color="#0f172a",
+                        gridcolor="#e2e8f0",
                     ),
-                    yaxis=dict(color="#cbd5e1", gridcolor="#334155"),
+                    yaxis=dict(color="#0f172a", gridcolor="#e2e8f0"),
                 )
                 st.plotly_chart(fig_time, use_container_width=True, config={"displayModeBar": False})
 
@@ -1087,7 +1233,7 @@ elif selected_nav == "🔍 Live Incident Investigation":
 elif selected_nav == "🌐 Service Dependency Topology":
     st.markdown('<h2>🌐 Microservice Mesh Dependency Topology</h2>', unsafe_allow_html=True)
     st.markdown(
-        '<p style="color: #94a3b8; font-size: 1.05rem;">Interactive visual topology mapping showing how failures cascade through production microservices.</p>',
+        f'<p style="color: {t_muted_text}; font-size: 1.05rem;">Interactive visual topology mapping showing how failures cascade through production microservices.</p>',
         unsafe_allow_html=True,
     )
 
@@ -1131,7 +1277,7 @@ elif selected_nav == "🌐 Service Dependency Topology":
 elif selected_nav == "📊 Benchmark Evaluation (RCAEval)":
     st.markdown('<h2>📊 Accuracy Test on Real Incident Benchmark</h2>', unsafe_allow_html=True)
     st.markdown(
-        '<p style="color: #94a3b8; font-size: 1.05rem;">Tests detection accuracy across real microservice outage cases. Detection is performed completely blind without knowing the answer beforehand.</p>',
+        f'<p style="color: {t_muted_text}; font-size: 1.05rem;">Tests detection accuracy across real microservice outage cases. Detection is performed completely blind without knowing the answer beforehand.</p>',
         unsafe_allow_html=True,
     )
 
@@ -1188,7 +1334,7 @@ elif selected_nav == "📊 Benchmark Evaluation (RCAEval)":
 elif selected_nav == "📋 Incident Audit History":
     st.markdown('<h2>📋 Incident Audit History</h2>', unsafe_allow_html=True)
     st.markdown(
-        '<p style="color: #94a3b8; font-size: 1.05rem;">Audit log of all incidents analyzed during your active session.</p>',
+        f'<p style="color: {t_muted_text}; font-size: 1.05rem;">Audit log of all incidents analyzed during your active session.</p>',
         unsafe_allow_html=True,
     )
 
@@ -1214,7 +1360,7 @@ elif selected_nav == "📋 Incident Audit History":
 elif selected_nav == "💡 Architecture & Why Not Raw LLMs":
     st.markdown('<h2>💡 How CloudSleuth Works & Why It Beats Raw AI</h2>', unsafe_allow_html=True)
     st.markdown(
-        '<p style="color: #94a3b8; font-size: 1.05rem;">Why fast, evidence-based detection is superior to slow AI guessing during critical production outages.</p>',
+        f'<p style="color: {t_muted_text}; font-size: 1.05rem;">Why fast, evidence-based detection is superior to slow AI guessing during critical production outages.</p>',
         unsafe_allow_html=True,
     )
 
