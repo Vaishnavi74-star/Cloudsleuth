@@ -15,7 +15,7 @@ pip install -r requirements.txt
 ### 2. Run Test Suite
 Verify that data loading, ground-truth isolation, statistical ranking, and benchmark evaluation pass:
 ```bash
-python -m pytest tests/test_cloudsleuth.py -v
+python -m pytest tests -v
 ```
 
 ### 3. Launch Streamlit Dashboard
@@ -84,6 +84,28 @@ CloudSleuth integrates Google's **Gemma** model (`gemma-2-9b-it`) to augment det
 4. **Resilient Offline Fallback**:
    - If `GEMMA_API_KEY` is not configured or an API endpoint fails, CloudSleuth automatically engages its built-in deterministic evidence explainer with zero hallucination risk.
 
+---
+
+## 🩺 Website Health Monitoring (External Surveillance)
+
+CloudSleuth includes an external, passive health surveillance engine that enables operators to enter any publicly accessible website URL and inspect its availability and performance without needing access to that website's internal telemetry.
+
+### Key Capabilities
+- **URL Inspection & Reachability**: Immediate HTTP/HTTPS connectivity verification with response code detection (2xx, 3xx, 4xx, 5xx).
+- **Latency Measurement**: Accurate response time measurement with high-resolution timers.
+- **SSL/TLS Certificate Inspection**: Automatic certificate validity check, issuer detection, and expiration tracking.
+- **Protocol Failure Classification**: Categorizes errors into `dns_failure`, `ssl_error`, `timeout`, `connection_refused`, `4xx_client_error`, `5xx_server_error`, `redirect_loop`, or `ssrf_blocked`.
+- **Observable Symptoms vs. Confirmed Issues**: Rigorously separates externally observable surface symptoms (e.g., HTTP 502, slow latency) from confirmed facts, explicitly clarifying that internal server bugs/deadlocks cannot be confirmed externally.
+- **Gemma AI Explanation & Action Plan**: Translates raw protocol errors into plain-English explanations and actionable troubleshooting steps for operators and visitors.
+- **Audit History & CSV Export**: Session-based health check history log with timestamped records and downloadable CSV.
+
+### 🛡️ Security & SSRF Protection
+- **Protocol Restrictions**: Exclusively allows HTTP and HTTPS schemes.
+- **SSRF Defense**: Automatically blocks all requests to private networks (RFC 1918), loopback (`localhost`, `127.0.0.1`, `::1`), link-local, and cloud metadata endpoints (`169.254.169.254`, `metadata.google.internal`).
+- **Redirect Validation**: Validates every intermediate redirect hop and resolved IP address.
+- **Safety Caps & Rate Limiting**: Enforces connection/read timeouts, 1 MB response body caps, and a 10 check/minute sliding window rate limiter.
+- **Non-Intrusive**: Performs single passive read-only probes with no port scanning, brute-forcing, or stress testing.
+
 ### ⚙️ Gemma Configuration
 Copy `.env.example` to `.env`:
 ```bash
@@ -132,7 +154,7 @@ docker compose up -d
   ```
 - **Run Test Suite Inside Container**:
   ```bash
-  docker exec cloudsleuth python -m pytest tests/test_cloudsleuth.py -v
+  docker exec cloudsleuth python -m pytest tests -v
   ```
 
 ### 5. Stop and Remove the Container
@@ -261,9 +283,11 @@ http://<EC2-PUBLIC-IP>:8501
 │   ├── data_loader.py          # Real telemetry loader & ground-truth isolation
 │   ├── engine.py               # Deterministic statistical RCA engine
 │   ├── evaluation.py           # Benchmark evaluator (Hit@1/3/5, Avg@5)
-│   └── gemma_service.py        # Google Gemma integration client & prompt engine
+│   ├── gemma_service.py        # Google Gemma integration client & prompt engine
+│   └── website_monitor.py      # Passive website health monitor with SSRF protection
 ├── tests/
-│   └── test_cloudsleuth.py     # 13 unit, integration, and Docker security tests
+│   ├── test_cloudsleuth.py     # 13 RCAEval & Docker security unit tests
+│   └── test_website_monitor.py # 19 health monitoring & SSRF validation tests
 ├── requirements.txt            # Python dependencies
 ├── .env.example                # Example environment configuration template
 ├── README.md                   # Comprehensive documentation & deployment guides

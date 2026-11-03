@@ -46,6 +46,12 @@ from cloudsleuth.gemma_service import (
     GemmaService,
     GemmaResponse,
 )
+from cloudsleuth.website_monitor import (
+    check_website_health,
+    HealthCheckResult,
+    RateLimiter,
+    WebsiteHealthTelemetryExporter,
+)
 
 # Page configuration
 st.set_page_config(
@@ -97,6 +103,16 @@ if "diagnosis_history" not in st.session_state:
     st.session_state["diagnosis_history"] = []
 if "active_case_id" not in st.session_state:
     st.session_state["active_case_id"] = "sample_baro_emailservice_mem"
+if "website_health_history" not in st.session_state:
+    st.session_state["website_health_history"] = []
+if "website_rate_limiter" not in st.session_state:
+    st.session_state["website_rate_limiter"] = RateLimiter()
+if "current_health_result" not in st.session_state:
+    st.session_state["current_health_result"] = None
+if "health_url_input" not in st.session_state:
+    st.session_state["health_url_input"] = "https://example.com"
+if "website_telemetry_exporter" not in st.session_state:
+    st.session_state["website_telemetry_exporter"] = WebsiteHealthTelemetryExporter(enabled=False)
 
 # Enterprise Crystal-Clear Light Theme Tokens (Enforced)
 t_app_bg = "#f8fafc"
@@ -734,6 +750,7 @@ nav_options = [
     "🏠 Home",
     "🔍 Live Incident Investigation",
     "🌐 Service Dependency Topology",
+    "🩺 Website Health Monitoring",
     "📊 Benchmark Evaluation (RCAEval)",
     "📋 Incident Audit History",
     "💡 Architecture & Why Not Raw LLMs",
@@ -755,6 +772,7 @@ st.sidebar.caption("• **Metrics**: CPU, memory, disk, and network stats")
 st.sidebar.caption("• **Logs**: Error messages and crash alerts")
 st.sidebar.caption("• **Traces**: Response times and communication delays")
 st.sidebar.caption("• **Benchmark**: Real-world production failure datasets")
+st.sidebar.caption("• **External Web**: Zero-agent HTTP/SSL/DNS surveillance")
 
 
 # =============================================================
@@ -770,6 +788,37 @@ if selected_nav == "🏠 Home":
         """,
         unsafe_allow_html=True,
     )
+
+    # Dual capability overview
+    c_home_feat1, c_home_feat2 = st.columns(2)
+    with c_home_feat1:
+        st.markdown(
+            f"""
+            <div style="background: {t_card_bg}; border: 1.5px solid {t_card_border}; border-radius: 10px; padding: 14px 18px; margin-bottom: 0.8rem; box-shadow: 0 1px 4px rgba(0,0,0,0.04);">
+                <div style="font-weight: 800; font-size: 1.05rem; color: #0284c7; display: flex; align-items: center; gap: 8px;">
+                    <span>🔬</span> Microservice Incident RCA (Internal Telemetry)
+                </div>
+                <div style="font-size: 0.85rem; color: {t_muted_text}; margin-top: 4px;">
+                    Evaluates multi-source metrics, logs, and traces from real RCAEval production benchmarks. Pinpoints root cause in &lt; 38 ms.
+                </div>
+            </div>
+            """,
+            unsafe_allow_html=True,
+        )
+    with c_home_feat2:
+        st.markdown(
+            f"""
+            <div style="background: {t_card_bg}; border: 1.5px solid {t_card_border}; border-radius: 10px; padding: 14px 18px; margin-bottom: 0.8rem; box-shadow: 0 1px 4px rgba(0,0,0,0.04);">
+                <div style="font-weight: 800; font-size: 1.05rem; color: #10b981; display: flex; align-items: center; gap: 8px;">
+                    <span>🩺</span> Website Health Monitoring (Zero Telemetry)
+                </div>
+                <div style="font-size: 0.85rem; color: {t_muted_text}; margin-top: 4px;">
+                    External surveillance on any public URL: HTTP status codes, latency, DNS health, SSL security &amp; Gemma AI diagnostics.
+                </div>
+            </div>
+            """,
+            unsafe_allow_html=True,
+        )
 
     st.markdown("### 🎬 Live Outage Walkthrough")
     st.write("Pick an incident below to see how CloudSleuth finds the real culprit instead of blaming innocent services:")
@@ -1272,7 +1321,377 @@ elif selected_nav == "🌐 Service Dependency Topology":
 
 
 # =============================================================
-# 4. BENCHMARK RESULTS (RCAEVAL)
+# 4. WEBSITE HEALTH MONITORING (PASSIVE EXTERNAL SURVEILLANCE)
+# =============================================================
+elif selected_nav == "🩺 Website Health Monitoring":
+    st.markdown('<h2>🩺 Public Website Health Monitoring</h2>', unsafe_allow_html=True)
+    st.markdown(
+        f'<p style="color: {t_muted_text}; font-size: 1.05rem;">External availability, performance & security inspection for public websites. Evaluates HTTP response codes, latency, DNS health, and SSL certificates without requiring internal telemetry access.</p>',
+        unsafe_allow_html=True,
+    )
+
+    # Security & Scope Banner
+    st.markdown(
+        f"""
+        <div style="background-color: #f0fdf4; border: 1.5px solid #86efac; border-radius: 8px; padding: 0.85rem 1.2rem; margin-bottom: 1.25rem; font-size: 0.9rem; color: #166534;">
+            🛡️ <strong>Passive Surveillance & Strict Security Controls:</strong>
+            Supports HTTP/HTTPS only. Strict SSRF protection blocks private IPs (RFC 1918), localhost (127.0.0.1/::1), and cloud metadata endpoints (169.254.169.254).
+            All redirect targets and resolved IPs are verified. Requests are rate-limited with strict response-size and connection timeouts. No intrusive scanning, attacks, or stress-testing are performed.
+        </div>
+        """,
+        unsafe_allow_html=True,
+    )
+
+    # Preset quick-test buttons
+    st.markdown("##### ⚡ Quick Test Presets")
+    preset_cols = st.columns(5)
+    preset_clicked = None
+    with preset_cols[0]:
+        if st.button("🟢 Healthy Site", key="btn_preset_healthy", use_container_width=True):
+            preset_clicked = "https://example.com"
+    with preset_cols[1]:
+        if st.button("🟠 404 Client Error", key="btn_preset_404", use_container_width=True):
+            preset_clicked = "https://httpbin.org/status/404"
+    with preset_cols[2]:
+        if st.button("🔴 500 Server Error", key="btn_preset_500", use_container_width=True):
+            preset_clicked = "https://httpbin.org/status/500"
+    with preset_cols[3]:
+        if st.button("⏱️ Slow Latency", key="btn_preset_slow", use_container_width=True):
+            preset_clicked = "https://httpbin.org/delay/3"
+    with preset_cols[4]:
+        if st.button("🚫 SSRF Demo (Blocked)", key="btn_preset_ssrf", use_container_width=True):
+            preset_clicked = "http://127.0.0.1:8080"
+
+    # Input row
+    c_url, c_btn = st.columns([4, 1])
+    with c_url:
+        default_val = preset_clicked if preset_clicked else st.session_state.get("health_url_input", "https://example.com")
+        input_url = st.text_input(
+            "Enter Public Website URL:",
+            value=default_val,
+            placeholder="https://yourwebsite.com",
+            help="Enter any publicly accessible HTTP/HTTPS URL to check its external health.",
+            key="url_input_field",
+        )
+    with c_btn:
+        st.markdown("<div style='height: 28px;'></div>", unsafe_allow_html=True)
+        run_check = st.button("🩺 Check Website", type="primary", use_container_width=True)
+
+    # Rate limit indicator
+    limiter: RateLimiter = st.session_state["website_rate_limiter"]
+    st.caption(f"⏱️ Rate Limit: **{limiter.remaining()} checks remaining** in the current 60s sliding window (max 10/min).")
+
+    # Run check logic if triggered
+    target_to_check = preset_clicked if preset_clicked else (input_url if run_check else None)
+    if target_to_check:
+        st.session_state["health_url_input"] = target_to_check
+        with st.spinner(f"🔍 Performing external health surveillance on {target_to_check}..."):
+            check_res = check_website_health(
+                target_to_check,
+                rate_limiter=limiter,
+                telemetry_exporter=st.session_state.get("website_telemetry_exporter"),
+            )
+            st.session_state["current_health_result"] = check_res
+
+            # Record in history (limit to last 50)
+            hist_entry = {
+                "Timestamp": check_res.timestamp,
+                "URL": check_res.url,
+                "Status Code": check_res.status_code if check_res.status_code is not None else "No response",
+                "Response Time": f"{check_res.response_time_ms:.0f} ms" if check_res.response_time_ms is not None else "N/A",
+                "Health": "Healthy" if check_res.is_healthy else "Degraded/Down",
+                "Category": check_res.error_category or "healthy",
+                "Severity": check_res.severity.title(),
+                "Details": check_res.error_detail or "OK",
+            }
+            st.session_state["website_health_history"].insert(0, hist_entry)
+            if len(st.session_state["website_health_history"]) > 50:
+                st.session_state["website_health_history"] = st.session_state["website_health_history"][:50]
+
+    # Display Current Result Dashboard
+    res: Optional[HealthCheckResult] = st.session_state.get("current_health_result")
+    if res:
+        st.markdown("---")
+        st.markdown(f"### 📊 Inspection Results: <code>{res.url}</code>", unsafe_allow_html=True)
+
+        # Health Banner
+        if res.is_healthy and res.severity == "healthy":
+            st.markdown(
+                f"""
+                <div style="background-color: #f0fdf4; border: 2px solid #22c55e; border-radius: 10px; padding: 1.1rem 1.5rem; margin-bottom: 1.2rem; display: flex; align-items: center; justify-content: space-between;">
+                    <div>
+                        <div style="font-size: 1.25rem; font-weight: 800; color: #15803d;">✅ Website is Reachable & Operational</div>
+                        <div style="color: #166534; font-size: 0.9rem; margin-top: 4px;">External HTTP handshake completed successfully. No critical anomalies detected.</div>
+                    </div>
+                    <div style="background-color: #dcfce7; color: #15803d; font-weight: 800; padding: 6px 14px; border-radius: 20px; font-size: 0.85rem; border: 1px solid #86efac;">
+                        STATUS: HEALTHY
+                    </div>
+                </div>
+                """,
+                unsafe_allow_html=True,
+            )
+        elif res.severity == "warning":
+            st.markdown(
+                f"""
+                <div style="background-color: #fffbeb; border: 2px solid #f59e0b; border-radius: 10px; padding: 1.1rem 1.5rem; margin-bottom: 1.2rem; display: flex; align-items: center; justify-content: space-between;">
+                    <div>
+                        <div style="font-size: 1.25rem; font-weight: 800; color: #b45309;">⚠️ Warning Detected: {res.error_detail or 'Performance Anomaly'}</div>
+                        <div style="color: #92400e; font-size: 0.9rem; margin-top: 4px;">The site responded, but returned an alert status or high latency that degrades user experience.</div>
+                    </div>
+                    <div style="background-color: #fef3c7; color: #b45309; font-weight: 800; padding: 6px 14px; border-radius: 20px; font-size: 0.85rem; border: 1px solid #fde68a;">
+                        STATUS: DEGRADED
+                    </div>
+                </div>
+                """,
+                unsafe_allow_html=True,
+            )
+        else:
+            st.markdown(
+                f"""
+                <div style="background-color: #fef2f2; border: 2px solid #ef4444; border-radius: 10px; padding: 1.1rem 1.5rem; margin-bottom: 1.2rem; display: flex; align-items: center; justify-content: space-between;">
+                    <div>
+                        <div style="font-size: 1.25rem; font-weight: 800; color: #b91c1c;">🚨 Critical Failure Detected: {res.error_detail or 'Unreachable'}</div>
+                        <div style="color: #991b1b; font-size: 0.9rem; margin-top: 4px;">Classification: <strong>{res.error_category or 'Connection Failure'}</strong>. Users attempting to access this URL are experiencing outages or blocking errors.</div>
+                    </div>
+                    <div style="background-color: #fee2e2; color: #b91c1c; font-weight: 800; padding: 6px 14px; border-radius: 20px; font-size: 0.85rem; border: 1px solid #fca5a5;">
+                        STATUS: CRITICAL
+                    </div>
+                </div>
+                """,
+                unsafe_allow_html=True,
+            )
+
+        # 4 Key Metrics Cards
+        k1, k2, k3, k4 = st.columns(4)
+        with k1:
+            code_str = f"HTTP {res.status_code}" if res.status_code else "No Response"
+            code_desc = "2xx Success" if res.is_healthy else (f"Error: {res.error_category}" if res.error_category else "Unreachable")
+            st.markdown(
+                f"""
+                <div class="four-w-card">
+                    <div class="four-w-title" style="color: #0284c7;">HTTP Status Code</div>
+                    <div class="four-w-value" style="color: {'#15803d' if res.is_healthy else '#b91c1c'};">{code_str}</div>
+                    <div class="four-w-desc">{code_desc}</div>
+                </div>
+                """,
+                unsafe_allow_html=True,
+            )
+        with k2:
+            time_str = f"{res.response_time_ms:.0f} ms" if res.response_time_ms else "Timed Out"
+            time_eval = "Fast (<500ms)" if (res.response_time_ms and res.response_time_ms < 500) else ("Normal (<1500ms)" if (res.response_time_ms and res.response_time_ms < 1500) else ("Slow (>1500ms)" if res.response_time_ms else "Connection Failed"))
+            st.markdown(
+                f"""
+                <div class="four-w-card">
+                    <div class="four-w-title" style="color: #7c3aed;">Response Latency</div>
+                    <div class="four-w-value" style="color: {t_head_text};">{time_str}</div>
+                    <div class="four-w-desc">{time_eval}</div>
+                </div>
+                """,
+                unsafe_allow_html=True,
+            )
+        with k3:
+            avail_str = "UP (Healthy)" if res.is_healthy else ("DEGRADED" if res.severity == "warning" else "DOWN / BLOCKED")
+            avail_color = "#15803d" if res.is_healthy else ("#b45309" if res.severity == "warning" else "#b91c1c")
+            st.markdown(
+                f"""
+                <div class="four-w-card">
+                    <div class="four-w-title" style="color: #ea580c;">Endpoint Availability</div>
+                    <div class="four-w-value" style="color: {avail_color};">{avail_str}</div>
+                    <div class="four-w-desc">External probe connectivity</div>
+                </div>
+                """,
+                unsafe_allow_html=True,
+            )
+        with k4:
+            if res.ssl_valid is True:
+                ssl_label = "🔒 Valid SSL"
+                ssl_color = "#15803d"
+                ssl_sub = res.ssl_issuer or "Verified Certificate"
+            elif res.ssl_valid is False:
+                ssl_label = "🔓 SSL Failed"
+                ssl_color = "#b91c1c"
+                ssl_sub = "Untrusted or Expired"
+            else:
+                ssl_label = "🌐 HTTP (Plain)"
+                ssl_color = "#64748b"
+                ssl_sub = "No encryption used"
+            st.markdown(
+                f"""
+                <div class="four-w-card">
+                    <div class="four-w-title" style="color: #059669;">SSL/TLS Security</div>
+                    <div class="four-w-value" style="color: {ssl_color};">{ssl_label}</div>
+                    <div class="four-w-desc">{ssl_sub}</div>
+                </div>
+                """,
+                unsafe_allow_html=True,
+            )
+
+        st.markdown("<br>", unsafe_allow_html=True)
+
+        # Observable Symptoms vs Confirmed Root Causes
+        c_sym, c_iss = st.columns(2)
+        with c_sym:
+            st.markdown(
+                f"""
+                <div style="background: {t_card_bg}; border: 1.5px solid {t_card_border}; border-radius: 10px; padding: 1.25rem; height: 100%; box-shadow: 0 2px 8px rgba(0,0,0,0.05);">
+                    <div style="font-size: 1rem; font-weight: 800; color: #0284c7; margin-bottom: 0.6rem; display: flex; align-items: center; gap: 8px;">
+                        <span>👁️</span> Observable Symptoms (External Perspective)
+                    </div>
+                    <div style="font-size: 0.85rem; color: {t_muted_text}; margin-bottom: 0.8rem;">
+                        Signals visible to external visitors and HTTP/TCP network probes:
+                    </div>
+                """,
+                unsafe_allow_html=True,
+            )
+            if res.observable_symptoms:
+                for sym in res.observable_symptoms:
+                    st.markdown(f"• **{sym}**")
+            else:
+                st.markdown("• *No adverse symptoms observed. Normal operational behavior.*")
+            st.markdown("</div>", unsafe_allow_html=True)
+
+        with c_iss:
+            st.markdown(
+                f"""
+                <div style="background: {t_card_bg}; border: 1.5px solid {t_card_border}; border-radius: 10px; padding: 1.25rem; height: 100%; box-shadow: 0 2px 8px rgba(0,0,0,0.05);">
+                    <div style="font-size: 1rem; font-weight: 800; color: #dc2626; margin-bottom: 0.6rem; display: flex; align-items: center; gap: 8px;">
+                        <span>🎯</span> Confirmed Issues vs. Internal Unknowns
+                    </div>
+                    <div style="font-size: 0.85rem; color: {t_muted_text}; margin-bottom: 0.8rem;">
+                        Verified protocol facts vs. unconfirmed backend causes:
+                    </div>
+                """,
+                unsafe_allow_html=True,
+            )
+            if res.confirmed_issues:
+                for iss in res.confirmed_issues:
+                    st.markdown(f"• **{iss}**")
+            else:
+                st.markdown("• *No protocol faults or connection failures confirmed.*")
+
+            st.markdown(
+                f"""
+                <hr style="margin: 0.8rem 0; border: none; border-top: 1px dashed {t_card_border};">
+                <div style="font-size: 0.8rem; color: {t_muted_text}; line-height: 1.4;">
+                    📌 <strong>Boundary Note:</strong> External health checks confirm <em>protocol-level facts</em> (status codes, timeouts, DNS/SSL handshakes).
+                    Specific internal server causes (e.g., database deadlocks, uncaught exceptions, backend memory leaks) cannot be confirmed without internal microservice telemetry.
+                </div>
+                </div>
+                """,
+                unsafe_allow_html=True,
+            )
+
+        # Technical Details Accordion
+        with st.expander("🔍 Deep Technical Inspection & Protocol Details", expanded=False):
+            tech_c1, tech_c2 = st.columns(2)
+            with tech_c1:
+                st.markdown(f"**Target URL**: `{res.url}`")
+                if res.final_url and res.final_url != res.url:
+                    st.markdown(f"**Final Redirect URL**: `{res.final_url}`")
+                    st.markdown(f"**Redirect Count**: `{res.redirect_count}` hop(s)")
+                st.markdown(f"**Server Header**: `{res.server_header or 'Not disclosed by server'}`")
+                st.markdown(f"**Content-Type**: `{res.content_type or 'Unknown'}`")
+            with tech_c2:
+                st.markdown(f"**Inspection Timestamp**: `{res.timestamp}`")
+                st.markdown(f"**Error Category**: `{res.error_category or 'None'}`")
+                if res.ssl_issuer:
+                    st.markdown(f"**SSL Issuer**: `{res.ssl_issuer}`")
+                if res.ssl_expiry:
+                    days_note = f" ({res.ssl_days_remaining} days remaining)" if res.ssl_days_remaining is not None else ""
+                    st.markdown(f"**SSL Expiration**: `{res.ssl_expiry}`{days_note}")
+                if res.content_length:
+                    st.markdown(f"**Response Body Sampled**: `{res.content_length:,} bytes`")
+
+            if res.redirect_chain:
+                st.markdown("---")
+                st.markdown("**Redirect Chain History:**")
+                for r_step in res.redirect_chain:
+                    st.markdown(f"- `{r_step}`")
+
+        # Gemma AI Explanation & Troubleshooting
+        st.markdown("<br>", unsafe_allow_html=True)
+        st.markdown("### 🤖 Gemma AI Health Analysis & Troubleshooting Guide")
+
+        ai_exp_key = f"health_ai_exp_{res.url}_{res.status_code}_{res.error_category}"
+        if ai_exp_key not in st.session_state:
+            with st.spinner("🤖 Generating Gemma AI incident breakdown and troubleshooting suggestions..."):
+                st.session_state[ai_exp_key] = ai_service.explain_website_health(res)
+
+        gemma_res: GemmaResponse = st.session_state[ai_exp_key]
+
+        prov_color = "#10b981" if not gemma_res.is_fallback else "#f59e0b"
+        st.markdown(
+            f"""
+            <div class="ai-briefing-card">
+                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1rem; border-bottom: 1px solid {t_card_border}; padding-bottom: 0.6rem;">
+                    <span style="font-weight: 800; font-size: 1.1rem; color: {t_head_text};">
+                        AI Synthesis & Operator Action Plan
+                    </span>
+                    <span style="background-color: {prov_color}; color: #ffffff; padding: 3px 10px; border-radius: 12px; font-size: 0.75rem; font-weight: 700;">
+                        {gemma_res.provider} ({gemma_res.model_name}) • {gemma_res.latency_ms:.0f} ms
+                    </span>
+                </div>
+            """,
+            unsafe_allow_html=True,
+        )
+        st.markdown(gemma_res.text)
+        st.markdown("</div>", unsafe_allow_html=True)
+
+    # Health Check History Section
+    st.markdown("<br>", unsafe_allow_html=True)
+    st.markdown("### 📋 Health Check Audit History")
+
+    history_list = st.session_state.get("website_health_history", [])
+    if history_list:
+        hist_df = pd.DataFrame(history_list)
+
+        # Plotly Latency Trend if >= 2 entries with valid latency
+        valid_latency_df = hist_df[hist_df["Response Time"] != "N/A"].copy()
+        if len(valid_latency_df) >= 2:
+            try:
+                valid_latency_df["Latency_ms"] = valid_latency_df["Response Time"].str.replace(" ms", "").astype(float)
+                fig_hist = px.line(
+                    valid_latency_df.iloc[::-1],
+                    x="Timestamp",
+                    y="Latency_ms",
+                    markers=True,
+                    title="Website Response Latency Trend (Recent Checks)",
+                    labels={"Latency_ms": "Response Time (ms)", "Timestamp": "Check Time"},
+                )
+                fig_hist.update_layout(
+                    paper_bgcolor=t_card_bg,
+                    plot_bgcolor=t_card_bg,
+                    font=dict(color=t_main_text),
+                    margin=dict(l=20, r=20, t=40, b=20),
+                    height=260,
+                )
+                fig_hist.update_traces(line_color="#0284c7", marker=dict(size=8, color="#0369a1"))
+                st.plotly_chart(fig_hist, use_container_width=True)
+            except Exception:
+                pass
+
+        st.dataframe(hist_df, use_container_width=True, hide_index=True)
+
+        h_col1, h_col2 = st.columns([1, 4])
+        with h_col1:
+            if st.button("🗑️ Clear Health History"):
+                st.session_state["website_health_history"] = []
+                st.session_state["current_health_result"] = None
+                st.rerun()
+        with h_col2:
+            csv_data = hist_df.to_csv(index=False).encode('utf-8')
+            st.download_button(
+                label="📥 Export Health History (CSV)",
+                data=csv_data,
+                file_name="cloudsleuth_website_health_history.csv",
+                mime="text/csv",
+            )
+    else:
+        st.info("No health checks conducted yet in this session. Enter a URL above and click **Check Website** to begin.")
+
+
+# =============================================================
+# 5. BENCHMARK RESULTS (RCAEVAL)
 # =============================================================
 elif selected_nav == "📊 Benchmark Evaluation (RCAEval)":
     st.markdown('<h2>📊 Accuracy Test on Real Incident Benchmark</h2>', unsafe_allow_html=True)

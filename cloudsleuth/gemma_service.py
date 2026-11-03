@@ -675,3 +675,57 @@ At timestamp `{bundle.inject_time}`, a critical production incident degraded ser
             is_fallback=True,
             prompt_used=prompt,
         )
+
+    def explain_website_health(self, result: Any) -> GemmaResponse:
+        """
+        Executes Feature: AI-Powered Website Health Explanation.
+        Explains externally observable symptoms vs confirmed issues and provides troubleshooting suggestions.
+        Calls live Gemma if configured; seamlessly falls back to deterministic explanation if not.
+        """
+        from cloudsleuth.website_monitor import build_website_health_prompt, generate_deterministic_explanation
+
+        prompt = build_website_health_prompt(result)
+        t0 = time.perf_counter()
+
+        if self.api_key or self.groq_api_key or self.api_base:
+            try:
+                content = self._call_gemma_api(prompt)
+                latency_ms = (time.perf_counter() - t0) * 1000.0
+                provider_name = "Google AI Studio (Gemma)" if self.api_key else ("Groq (Gemma)" if self.groq_api_key else "Ollama (Gemma)")
+                return GemmaResponse(
+                    text=content,
+                    model_name=self.model_name,
+                    status="success",
+                    provider=provider_name,
+                    latency_ms=round(latency_ms, 2),
+                    is_fallback=False,
+                    prompt_used=prompt,
+                )
+            except Exception as e:
+                err_msg = str(e)
+                fallback_text = generate_deterministic_explanation(result)
+                latency_ms = (time.perf_counter() - t0) * 1000.0
+                return GemmaResponse(
+                    text=fallback_text,
+                    model_name=f"{self.model_name} (Fallback Engine)",
+                    status="fallback_deterministic",
+                    provider="Deterministic Health Explainer",
+                    latency_ms=round(latency_ms, 2),
+                    error_details=err_msg,
+                    is_fallback=True,
+                    prompt_used=prompt,
+                )
+
+        fallback_text = generate_deterministic_explanation(result)
+        latency_ms = (time.perf_counter() - t0) * 1000.0
+        return GemmaResponse(
+            text=fallback_text,
+            model_name="Deterministic Offline Engine",
+            status="fallback_deterministic",
+            provider="Deterministic Health Explainer",
+            latency_ms=round(latency_ms, 2),
+            error_details="No API key configured in GEMMA_API_KEY. Using deterministic health explanation.",
+            is_fallback=True,
+            prompt_used=prompt,
+        )
+
